@@ -147,7 +147,6 @@ function LinimasaContent() {
             <div className="lg:col-span-5">
               <CardIdentityStatus
                 statusType="Penduduk"
-                nik="3328012408980002"
                 kota="Kota Tegal"
                 kecamatan="Tegal Timur"
                 kelurahan="Mintaragen"
@@ -201,7 +200,6 @@ function LinimasaContent() {
                     <thead>
                       <tr className="border-b border-border/80 text-muted-foreground bg-muted/30">
                         <th className="py-2.5 px-3 font-medium">Nama Anak</th>
-                        <th className="py-2.5 px-3 font-medium">NIK</th>
                         <th className="py-2.5 px-3 font-medium">Tempat/Tgl Lahir</th>
                         <th className="py-2.5 px-3 font-medium">Gender</th>
                         <th className="py-2.5 px-3 font-medium">Wali</th>
@@ -213,9 +211,6 @@ function LinimasaContent() {
                         <tr key={w.id || idx} className="hover:bg-muted/40 transition-colors">
                           <td className="py-2.5 px-3 font-semibold text-foreground">
                             {w.nama_anak || "-"}
-                          </td>
-                          <td className="py-2.5 px-3 font-mono text-muted-foreground">
-                            {w.nik_anak || "-"}
                           </td>
                           <td className="py-2.5 px-3 text-muted-foreground">
                             {w.tempat_tanggal_lahir || "-"}

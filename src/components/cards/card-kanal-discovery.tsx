@@ -181,7 +181,6 @@ export function CardKanalDiscovery() {
   // Form State untuk Input Data Warga
   const [formData, setFormData] = useState({
     nama_anak: "",
-    nik_anak: "",
     tempat_tanggal_lahir: "",
     jenis_kelamin: "L",
     nama_wali: "",
@@ -252,7 +251,6 @@ export function CardKanalDiscovery() {
     try {
       const res = await submitDataWargaAction({
         nama_anak: formData.nama_anak,
-        nik_anak: formData.nik_anak || null,
         tempat_tanggal_lahir: formData.tempat_tanggal_lahir,
         jenis_kelamin: formData.jenis_kelamin,
         nama_wali: formData.nama_wali,
@@ -269,7 +267,6 @@ export function CardKanalDiscovery() {
         setIsInputOpen(false);
         setFormData({
           nama_anak: "",
-          nik_anak: "",
           tempat_tanggal_lahir: "",
           jenis_kelamin: "L",
           nama_wali: "",
@@ -529,32 +526,17 @@ export function CardKanalDiscovery() {
               </DialogHeader>
 
               <form onSubmit={handleSubmitWarga} className="space-y-3 pt-1">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium">Nama Lengkap Anak *</label>
-                    <Input
-                      placeholder="Contoh: Muhammad Rizky"
-                      value={formData.nama_anak}
-                      onChange={(e) =>
-                        setFormData({ ...formData, nama_anak: e.target.value })
-                      }
-                      required
-                      className="text-xs"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-medium">NIK Anak (16 Digit)</label>
-                    <Input
-                      placeholder="3328xxxxxxxxxxxx"
-                      value={formData.nik_anak}
-                      onChange={(e) =>
-                        setFormData({ ...formData, nik_anak: e.target.value })
-                      }
-                      maxLength={16}
-                      className="text-xs font-mono"
-                    />
-                  </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-medium">Nama Lengkap Anak *</label>
+                  <Input
+                    placeholder="Contoh: Muhammad Rizky"
+                    value={formData.nama_anak}
+                    onChange={(e) =>
+                      setFormData({ ...formData, nama_anak: e.target.value })
+                    }
+                    required
+                    className="text-xs"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

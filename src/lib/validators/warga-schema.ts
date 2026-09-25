@@ -2,13 +2,6 @@ import { z } from "zod";
 
 export const dataWargaSchema = z.object({
   nama_anak: z.string().min(1, "Nama anak wajib diisi"),
-  nik_anak: z
-    .string()
-    .refine((val) => val === "" || /^\d{16}$/.test(val), {
-      message: "NIK anak harus berupa 16 digit angka",
-    })
-    .optional()
-    .nullable(),
   tempat_tanggal_lahir: z.string().min(1, "Tempat dan tanggal lahir wajib diisi"),
   jenis_kelamin: z.string().min(1, "Jenis kelamin wajib diisi"),
   nama_wali: z.string().min(1, "Nama orang tua / wali wajib diisi"),

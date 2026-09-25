@@ -22,13 +22,10 @@ import {
   Building2,
   Home,
   CheckCircle2,
-  FileText,
-  Info,
 } from "lucide-react";
 
 export interface IdentityStatusProps {
   statusType?: "Penduduk" | "Pendatang";
-  nik?: string;
   kota?: string;
   kecamatan?: string;
   kelurahan?: string;
@@ -39,7 +36,6 @@ export interface IdentityStatusProps {
 
 export function CardIdentityStatus({
   statusType = "Penduduk",
-  nik = "3328012408980002",
   kota = "Kota Tegal",
   kecamatan = "Tegal Timur",
   kelurahan = "Mintaragen",
@@ -48,10 +44,6 @@ export function CardIdentityStatus({
   alamatLengkap = "Jl. Mataram No. 18, Mintaragen, Tegal Timur",
 }: IdentityStatusProps) {
   const isPenduduk = statusType === "Penduduk";
-  const maskedNik =
-    nik.length >= 8
-      ? `${nik.slice(0, 4)}********${nik.slice(-4)}`
-      : nik;
 
   const hierarchySteps = [
     { label: "Kota", value: kota, icon: Building2, desc: "Pemerintah Kota Tegal" },
@@ -96,7 +88,7 @@ export function CardIdentityStatus({
             <TooltipContent>
               <p>
                 {isPenduduk
-                  ? "Warga dengan KTP/KK resmi domisili tetap Kota Tegal"
+                  ? "Warga dengan domisili tetap Kota Tegal"
                   : "Warga pendatang / domisili non-permanen terdaftar"}
               </p>
             </TooltipContent>
@@ -105,27 +97,20 @@ export function CardIdentityStatus({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* NIK & Alamat Info */}
+        {/* Alamat Domisili Info */}
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/30 p-3 text-xs">
           <div className="flex items-center gap-2">
-            <FileText className="size-4 text-muted-foreground" />
-            <span className="text-muted-foreground">NIK:</span>
-            <span className="font-mono font-medium text-foreground">
-              {maskedNik}
+            <MapPin className="size-4 text-primary" />
+            <span className="text-muted-foreground font-medium">Alamat Domisili:</span>
+            <span className="font-medium text-foreground">
+              {alamatLengkap}
             </span>
-            <Tooltip>
-              <TooltipTrigger>
-                <Info className="size-3 text-muted-foreground cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Nomor Induk Kependudukan terdaftar dan terverifikasi di jarimas.id</p>
-              </TooltipContent>
-            </Tooltip>
           </div>
 
-          <div className="flex items-center gap-1.5 text-muted-foreground truncate">
-            <MapPin className="size-3.5" />
-            <span className="truncate">{alamatLengkap}</span>
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <span className="rounded-sm bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+              Wilayah Terdaftar
+            </span>
           </div>
         </div>
 

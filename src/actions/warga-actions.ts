@@ -34,7 +34,6 @@ export async function submitDataWargaAction(
       .from("data_warga")
       .insert({
         nama_anak: parsed.data.nama_anak,
-        nik_anak: parsed.data.nik_anak ?? null,
         tempat_tanggal_lahir: parsed.data.tempat_tanggal_lahir,
         jenis_kelamin: parsed.data.jenis_kelamin,
         nama_wali: parsed.data.nama_wali,
