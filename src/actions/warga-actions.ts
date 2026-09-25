@@ -30,6 +30,8 @@ export async function submitDataWargaAction(
   try {
     const supabase = await createServerSupabaseClient();
 
+    // posyandu_id bersifat opsional: Jika NULL, trigger database (trg_auto_assign_posyandu)
+    // akan secara otomatis menetapkan posyandu terdekat berbasis kelurahan_id / rt_wilayah_id
     const { data, error } = await supabase
       .from("data_warga")
       .insert({
