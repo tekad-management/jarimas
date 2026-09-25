@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useQueryStates, parseAsString } from "nuqs";
 import {
   Card,
@@ -16,9 +16,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { submitDataWargaAction } from "@/actions/warga-actions";
 import {
   Compass,
   Building,
@@ -28,6 +39,9 @@ import {
   RotateCcw,
   CheckCircle2,
   Filter,
+  UserPlus,
+  LogIn,
+  Loader2,
 } from "lucide-react";
 
 // Data referensi wilayah Kota Tegal
@@ -159,6 +173,22 @@ export function CardKanalDiscovery() {
     }
   );
 
+  // Dialog States
+  const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [isInputOpen, setIsInputOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form State untuk Input Data Warga
+  const [formData, setFormData] = useState({
+    nama_anak: "",
+    nik_anak: "",
+    tempat_tanggal_lahir: "",
+    jenis_kelamin: "L",
+    nama_wali: "",
+    status_tinggal: "Penduduk Tetap",
+    rt_wilayah_id: "RT-02-RW-04",
+  });
+
   const availableKelurahan = useMemo(() => {
     if (!filters.kecamatan || !REGION_DATA[filters.kecamatan]) return [];
     return REGION_DATA[filters.kecamatan].kelurahan;
@@ -200,32 +230,65 @@ export function CardKanalDiscovery() {
     toast.info("Filter wilayah telah direset.");
   };
 
-  const handleAction = () => {
-    if (!filters.kecamatan) {
-      toast.warning("Silakan pilih Kecamatan terlebih dahulu.");
+  const selectedUnitObj = availableUnits.find((u) => u.id === filters.unit);
+
+  const handleJoinKanal = () => {
+    toast.success("Berhasil Bergabung ke Kanal!", {
+      description: `Anda kini terdaftar pada kanal ${
+        selectedUnitObj ? selectedUnitObj.nama : "Wilayah Terpilih"
+      }.`,
+    });
+    setIsJoinOpen(false);
+  };
+
+  const handleSubmitWarga = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.nama_anak || !formData.nama_wali || !formData.tempat_tanggal_lahir) {
+      toast.error("Mohon lengkapi field wajib pada form.");
       return;
     }
 
-    const selectedKecName =
-      filters.kecamatan === "tegal-timur"
-        ? "Tegal Timur"
-        : filters.kecamatan === "tegal-barat"
-        ? "Tegal Barat"
-        : filters.kecamatan === "tegal-selatan"
-        ? "Tegal Selatan"
-        : "Margadana";
+    setIsSubmitting(true);
+    try {
+      const res = await submitDataWargaAction({
+        nama_anak: formData.nama_anak,
+        nik_anak: formData.nik_anak || null,
+        tempat_tanggal_lahir: formData.tempat_tanggal_lahir,
+        jenis_kelamin: formData.jenis_kelamin,
+        nama_wali: formData.nama_wali,
+        status_tinggal: formData.status_tinggal,
+        rt_wilayah_id: formData.rt_wilayah_id,
+        posyandu_id: selectedUnitObj?.tipe === "Posyandu" ? selectedUnitObj.id : null,
+        sekolah_id: selectedUnitObj?.tipe === "Sekolah" ? selectedUnitObj.id : null,
+      });
 
-    const selectedKel = availableKelurahan.find((k) => k.id === filters.kelurahan);
-    const selectedUnit = availableUnits.find((u) => u.id === filters.unit);
-
-    toast.success("Kanal Wilayah Ditemukan!", {
-      description: `Wilayah: ${selectedKecName} ${
-        selectedKel ? `> ${selectedKel.nama}` : ""
-      } ${selectedUnit ? `> ${selectedUnit.nama}` : ""}. Siap input data warga!`,
-    });
+      if (res.success) {
+        toast.success("Data Warga Berhasil Disimpan!", {
+          description: `Data untuk ${formData.nama_anak} telah masuk ke sistem Supabase.`,
+        });
+        setIsInputOpen(false);
+        setFormData({
+          nama_anak: "",
+          nik_anak: "",
+          tempat_tanggal_lahir: "",
+          jenis_kelamin: "L",
+          nama_wali: "",
+          status_tinggal: "Penduduk Tetap",
+          rt_wilayah_id: "RT-02-RW-04",
+        });
+      } else {
+        toast.error("Gagal Menyimpan Data", {
+          description: res.error || res.message,
+        });
+      }
+    } catch (err: unknown) {
+      toast.error("Terjadi Kesalahan", {
+        description: err instanceof Error ? err.message : "Kesalahan sistem.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  const isComplete = Boolean(filters.kecamatan && filters.kelurahan);
 
   return (
     <Card className="border border-border/80 bg-card shadow-xs">
@@ -240,7 +303,7 @@ export function CardKanalDiscovery() {
                 Kanal Discovery & Filter Wilayah
               </CardTitle>
               <CardDescription className="text-xs">
-                Cari kanal posyandu / sekolah berdasarkan filter bertingkat URL
+                Filter kanal posyandu / sekolah berbasis URL (nuqs)
               </CardDescription>
             </div>
           </div>
@@ -253,8 +316,9 @@ export function CardKanalDiscovery() {
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* Dropdowns Filter */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {/* Dropdown 1: Kecamatan */}
+          {/* 1. Kecamatan */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-1.5 text-xs font-medium text-foreground">
               <Building className="size-3 text-muted-foreground" />
@@ -276,7 +340,7 @@ export function CardKanalDiscovery() {
             </Select>
           </div>
 
-          {/* Dropdown 2: Kelurahan */}
+          {/* 2. Kelurahan */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-1.5 text-xs font-medium text-foreground">
               <Home className="size-3 text-muted-foreground" />
@@ -306,7 +370,7 @@ export function CardKanalDiscovery() {
             </Select>
           </div>
 
-          {/* Dropdown 3: Posyandu / Sekolah */}
+          {/* 3. Posyandu / Sekolah */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-1.5 text-xs font-medium text-foreground">
               <School className="size-3 text-muted-foreground" />
@@ -344,7 +408,7 @@ export function CardKanalDiscovery() {
           <div className="flex items-center gap-2 rounded-md bg-muted/40 p-2 text-xs text-muted-foreground">
             <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
             <span className="truncate">
-              Target Wilayah Terpilih:{" "}
+              Target Wilayah:{" "}
               <strong className="text-foreground capitalize">
                 {filters.kecamatan.replace("-", " ")}
               </strong>
@@ -364,8 +428,7 @@ export function CardKanalDiscovery() {
                   {" "}
                   &gt;{" "}
                   <strong className="text-foreground">
-                    {availableUnits.find((u) => u.id === filters.unit)?.nama ||
-                      filters.unit}
+                    {selectedUnitObj?.nama || filters.unit}
                   </strong>
                 </>
               )}
@@ -373,28 +436,231 @@ export function CardKanalDiscovery() {
           </div>
         )}
 
-        {/* Action Buttons */}
+        {/* Action Buttons with Dialog Modals */}
         <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
           {(filters.kecamatan || filters.kelurahan || filters.unit) && (
             <Button
               variant="outline"
               size="sm"
               onClick={handleReset}
-              className="text-xs"
+              className="text-xs h-8"
             >
               <RotateCcw className="size-3.5" />
-              Reset Filter
+              Reset
             </Button>
           )}
 
-          <Button
-            size="sm"
-            onClick={handleAction}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs gap-1.5 shadow-sm"
-          >
-            <span>{isComplete ? "Bergabung / Input Data" : "Pilih & Lanjutkan"}</span>
-            <ArrowRight className="size-3.5" />
-          </Button>
+          {/* Dialog 1: Bergabung ke Kanal */}
+          <Dialog open={isJoinOpen} onOpenChange={setIsJoinOpen}>
+            <DialogTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!filters.kecamatan}
+                  className="text-xs gap-1.5 h-8"
+                />
+              }
+            >
+              <LogIn className="size-3.5" />
+              <span>Bergabung ke Kanal</span>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Konfirmasi Bergabung ke Kanal</DialogTitle>
+                <DialogDescription>
+                  Bergabung dengan kanal komunitas untuk mendapatkan notifikasi dan jadwal layanan.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="rounded-lg border border-border/70 bg-muted/30 p-3 text-xs space-y-1.5">
+                <p>
+                  <strong>Kecamatan:</strong>{" "}
+                  <span className="capitalize">{filters.kecamatan || "Kota Tegal"}</span>
+                </p>
+                <p>
+                  <strong>Kelurahan:</strong>{" "}
+                  <span>
+                    {availableKelurahan.find((k) => k.id === filters.kelurahan)?.nama || "Semua Kelurahan"}
+                  </span>
+                </p>
+                <p>
+                  <strong>Unit Kanal:</strong>{" "}
+                  <span>{selectedUnitObj?.nama || "Kanal Umum Wilayah"}</span>
+                </p>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsJoinOpen(false)}
+                >
+                  Batal
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleJoinKanal}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  Konfirmasi Bergabung
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Dialog 2: Input Data Warga Modal */}
+          <Dialog open={isInputOpen} onOpenChange={setIsInputOpen}>
+            <DialogTrigger
+              render={
+                <Button
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5 h-8 shadow-xs"
+                />
+              }
+            >
+              <UserPlus className="size-3.5" />
+              <span>Input Data Warga</span>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Formulir Pendataan Warga</DialogTitle>
+                <DialogDescription>
+                  Masukkan data warga baru ke database terpadu jarimas.id (Supabase).
+                </DialogDescription>
+              </DialogHeader>
+
+              <form onSubmit={handleSubmitWarga} className="space-y-3 pt-1">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Nama Lengkap Anak *</label>
+                    <Input
+                      placeholder="Contoh: Muhammad Rizky"
+                      value={formData.nama_anak}
+                      onChange={(e) =>
+                        setFormData({ ...formData, nama_anak: e.target.value })
+                      }
+                      required
+                      className="text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">NIK Anak (16 Digit)</label>
+                    <Input
+                      placeholder="3328xxxxxxxxxxxx"
+                      value={formData.nik_anak}
+                      onChange={(e) =>
+                        setFormData({ ...formData, nik_anak: e.target.value })
+                      }
+                      maxLength={16}
+                      className="text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Tempat & Tgl Lahir *</label>
+                    <Input
+                      placeholder="Tegal, 12-05-2018"
+                      value={formData.tempat_tanggal_lahir}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          tempat_tanggal_lahir: e.target.value,
+                        })
+                      }
+                      required
+                      className="text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Jenis Kelamin *</label>
+                    <Select
+                      value={formData.jenis_kelamin}
+                      onValueChange={(val) =>
+                        setFormData({ ...formData, jenis_kelamin: val || "L" })
+                      }
+                    >
+                      <SelectTrigger className="w-full text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="L">Laki-laki (L)</SelectItem>
+                        <SelectItem value="P">Perempuan (P)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Nama Orang Tua / Wali *</label>
+                    <Input
+                      placeholder="Contoh: Bapak Hendra"
+                      value={formData.nama_wali}
+                      onChange={(e) =>
+                        setFormData({ ...formData, nama_wali: e.target.value })
+                      }
+                      required
+                      className="text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Status Tinggal</label>
+                    <Select
+                      value={formData.status_tinggal}
+                      onValueChange={(val) =>
+                        setFormData({
+                          ...formData,
+                          status_tinggal: val || "Penduduk Tetap",
+                        })
+                      }
+                    >
+                      <SelectTrigger className="w-full text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Penduduk Tetap">Penduduk Tetap</SelectItem>
+                        <SelectItem value="Pendatang">Pendatang / Non-Permanen</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="rounded-md border border-border/60 bg-muted/20 p-2.5 text-xs text-muted-foreground">
+                  <p>
+                    <strong>Target Unit:</strong>{" "}
+                    {selectedUnitObj
+                      ? `${selectedUnitObj.nama} (${selectedUnitObj.tipe})`
+                      : "Sesuai domisili RT 02 / RW 04"}
+                  </p>
+                </div>
+
+                <DialogFooter className="pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsInputOpen(false)}
+                    disabled={isSubmitting}
+                  >
+                    Batal
+                  </Button>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={isSubmitting}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+                  >
+                    {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
+                    <span>{isSubmitting ? "Menyimpan..." : "Simpan Data Warga"}</span>
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </CardContent>
     </Card>

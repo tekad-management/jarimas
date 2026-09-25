@@ -162,7 +162,8 @@ function LinimasaContent() {
           </div>
 
           {/* 3. Card Statistik & Grafik Rekapitulasi (Full Width) */}
-          <CardStatistics />
+          <CardStatistics isLoading={isLoading} />
+
 
           {/* 4. Realtime Data Warga Feed Section */}
           <Card className="border border-border/80 bg-card shadow-xs">

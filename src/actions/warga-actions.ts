@@ -6,20 +6,23 @@ import { dataWargaSchema, type DataWargaInput } from "@/lib/validators/warga-sch
 
 export type ActionResponse<T = unknown> = {
   success: boolean;
-  message?: string;
   data?: T;
+  error?: string;
+  message?: string;
   errors?: Record<string, string[]>;
 };
 
 export async function submitDataWargaAction(
-  input: DataWargaInput | unknown
+  input: DataWargaInput
 ): Promise<ActionResponse> {
   const parsed = dataWargaSchema.safeParse(input);
 
   if (!parsed.success) {
+    const errorMsg = "Validasi data gagal. Silakan periksa kembali formulir Anda.";
     return {
       success: false,
-      message: "Validasi data gagal. Silakan periksa kembali formulir Anda.",
+      error: errorMsg,
+      message: errorMsg,
       errors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -31,7 +34,7 @@ export async function submitDataWargaAction(
       .from("data_warga")
       .insert({
         nama_anak: parsed.data.nama_anak,
-        nik_anak: parsed.data.nik_anak,
+        nik_anak: parsed.data.nik_anak ?? null,
         tempat_tanggal_lahir: parsed.data.tempat_tanggal_lahir,
         jenis_kelamin: parsed.data.jenis_kelamin,
         nama_wali: parsed.data.nama_wali,
@@ -47,6 +50,7 @@ export async function submitDataWargaAction(
       console.error("Supabase error insert data_warga:", error);
       return {
         success: false,
+        error: error.message || "Gagal menyimpan data warga ke database.",
         message: error.message || "Gagal menyimpan data warga ke database.",
       };
     }
@@ -55,17 +59,20 @@ export async function submitDataWargaAction(
 
     return {
       success: true,
-      message: "Data warga berhasil disimpan.",
       data,
+      message: "Data warga berhasil disimpan.",
     };
   } catch (err: unknown) {
     console.error("Error submitDataWargaAction:", err);
+    const errorMessage =
+      err instanceof Error
+        ? err.message
+        : "Terjadi kesalahan pada server saat menyimpan data.";
+
     return {
       success: false,
-      message:
-        err instanceof Error
-          ? err.message
-          : "Terjadi kesalahan pada server saat menyimpan data.",
+      error: errorMessage,
+      message: errorMessage,
     };
   }
 }

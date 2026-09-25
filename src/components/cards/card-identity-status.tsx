@@ -9,6 +9,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   MapPin,
   ChevronRight,
@@ -17,6 +23,7 @@ import {
   Home,
   CheckCircle2,
   FileText,
+  Info,
 } from "lucide-react";
 
 export interface IdentityStatusProps {
@@ -47,11 +54,11 @@ export function CardIdentityStatus({
       : nik;
 
   const hierarchySteps = [
-    { label: "Kota", value: kota, icon: Building2 },
-    { label: "Kecamatan", value: kecamatan, icon: MapPin },
-    { label: "Kelurahan", value: kelurahan, icon: Home },
-    { label: "RW", value: `RW ${rw}`, icon: CheckCircle2 },
-    { label: "RT", value: `RT ${rt}`, icon: CheckCircle2 },
+    { label: "Kota", value: kota, icon: Building2, desc: "Pemerintah Kota Tegal" },
+    { label: "Kecamatan", value: kecamatan, icon: MapPin, desc: `Kecamatan ${kecamatan}` },
+    { label: "Kelurahan", value: kelurahan, icon: Home, desc: `Kelurahan ${kelurahan}` },
+    { label: "RW", value: `RW ${rw}`, icon: CheckCircle2, desc: `Rukun Warga ${rw}` },
+    { label: "RT", value: `RT ${rt}`, icon: CheckCircle2, desc: `Rukun Tetangga ${rt}` },
   ];
 
   return (
@@ -64,49 +71,75 @@ export function CardIdentityStatus({
             </div>
             <div>
               <CardTitle className="text-base font-semibold">
-                Status Identitas Kependudukan
+                Status Kewargaan & Wilayah
               </CardTitle>
               <CardDescription className="text-xs">
-                Informasi registrasi domisili dan hierarki wilayah
+                Data kependudukan & pemetaan wilayah administratif
               </CardDescription>
             </div>
           </div>
 
-          <Badge
-            variant={isPenduduk ? "default" : "secondary"}
-            className={
-              isPenduduk
-                ? "bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                : "bg-amber-600 hover:bg-amber-700 text-white font-medium"
-            }
-          >
-            <span className="size-1.5 rounded-full bg-white animate-pulse" />
-            Status: {statusType}
-          </Badge>
+          <Tooltip>
+            <TooltipTrigger>
+              <Badge
+                variant={isPenduduk ? "default" : "secondary"}
+                className={
+                  isPenduduk
+                    ? "bg-blue-600 hover:bg-blue-700 text-white font-medium cursor-help"
+                    : "bg-amber-600 hover:bg-amber-700 text-white font-medium cursor-help"
+                }
+              >
+                <span className="size-1.5 rounded-full bg-white animate-pulse" />
+                Status: {statusType}
+              </Badge>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {isPenduduk
+                  ? "Warga dengan KTP/KK resmi domisili tetap Kota Tegal"
+                  : "Warga pendatang / domisili non-permanen terdaftar"}
+              </p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* NIK & Alamat Meta */}
+        {/* NIK & Alamat Info */}
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/30 p-3 text-xs">
           <div className="flex items-center gap-2">
             <FileText className="size-4 text-muted-foreground" />
-            <span className="text-muted-foreground">NIK Terdaftar:</span>
+            <span className="text-muted-foreground">NIK:</span>
             <span className="font-mono font-medium text-foreground">
               {maskedNik}
             </span>
+            <Tooltip>
+              <TooltipTrigger>
+                <Info className="size-3 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Nomor Induk Kependudukan terdaftar dan terverifikasi di jarimas.id</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
-          <div className="flex items-center gap-2 text-muted-foreground truncate">
+
+          <div className="flex items-center gap-1.5 text-muted-foreground truncate">
             <MapPin className="size-3.5" />
             <span className="truncate">{alamatLengkap}</span>
           </div>
         </div>
 
-        {/* Hierarki Wilayah */}
+        <Separator />
+
+        {/* Hierarki Wilayah dengan Tooltip & Separator */}
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">
-            Hierarki Wilayah Administrasi:
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-muted-foreground">
+              Hierarki Wilayah Domisili:
+            </p>
+            <span className="text-[11px] text-muted-foreground">5 Tingkat Wilayah</span>
+          </div>
+
           <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-border/70 bg-background/50 p-2.5">
             {hierarchySteps.map((step, idx) => {
               const Icon = step.icon;
@@ -114,13 +147,21 @@ export function CardIdentityStatus({
 
               return (
                 <React.Fragment key={step.label}>
-                  <div className="flex items-center gap-1.5 rounded-md bg-muted/60 px-2.5 py-1 text-xs font-medium transition-colors hover:bg-muted">
-                    <Icon className="size-3 text-primary" />
-                    <span className="text-muted-foreground">{step.label}:</span>
-                    <span className="font-semibold text-foreground">
-                      {step.value}
-                    </span>
-                  </div>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <div className="flex items-center gap-1.5 rounded-md bg-muted/60 px-2.5 py-1 text-xs font-medium transition-colors hover:bg-muted cursor-default">
+                        <Icon className="size-3 text-primary" />
+                        <span className="text-muted-foreground">{step.label}:</span>
+                        <span className="font-semibold text-foreground">
+                          {step.value}
+                        </span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{step.desc}</p>
+                    </TooltipContent>
+                  </Tooltip>
+
                   {!isLast && (
                     <ChevronRight className="size-3.5 text-muted-foreground/60 shrink-0" />
                   )}

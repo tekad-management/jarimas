@@ -9,16 +9,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sparkles, Calendar, Clock, Activity, ShieldCheck } from "lucide-react";
 
 interface CardWelcomingProps {
   userName?: string;
   role?: string;
+  avatarUrl?: string;
 }
 
 export function CardWelcoming({
-  userName = "Warga Tekad",
-  role = "Masyarakat Tegal",
+  userName = "Budi Santoso",
+  role = "Warga RW 04 Mintaragen",
+  avatarUrl,
 }: CardWelcomingProps) {
   const [currentDate, setCurrentDate] = useState<string>("");
   const [currentTime, setCurrentTime] = useState<string>("");
@@ -48,54 +51,58 @@ export function CardWelcoming({
     return () => clearInterval(interval);
   }, []);
 
-  // Salam berdasarkan waktu
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 11) return "Selamat Pagi";
-    if (hour < 15) return "Selamat Siang";
-    if (hour < 18) return "Selamat Sore";
-    return "Selamat Malam";
-  };
+  // Inisial nama untuk Avatar Fallback
+  const initials = userName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase();
 
   return (
     <Card className="relative overflow-hidden border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-background to-teal-500/5 shadow-md backdrop-blur-sm">
-      <div className="absolute top-0 right-0 -mt-8 -mr-8 h-32 w-32 rounded-full bg-emerald-500/10 blur-2xl" />
+      <div className="absolute top-0 right-0 -mt-8 -mr-8 h-32 w-32 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
+
       <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-            >
-              <Sparkles className="size-3 text-emerald-500" />
-              Sistem Terpadu TEKAD
-            </Badge>
-            <span className="text-xs text-muted-foreground">•</span>
-            <Badge variant="secondary" className="text-xs font-normal">
-              {role}
-            </Badge>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Avatar size="lg" className="ring-2 ring-emerald-500/30">
+              {avatarUrl && <AvatarImage src={avatarUrl} alt={userName} />}
+              <AvatarFallback className="bg-emerald-600 font-bold text-white">
+                {initials || "W"}
+              </AvatarFallback>
+            </Avatar>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <Badge
+                  variant="outline"
+                  className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs"
+                >
+                  <Sparkles className="size-3 text-emerald-500" />
+                  jarimas.id
+                </Badge>
+                <Badge variant="secondary" className="text-xs font-normal">
+                  {role}
+                </Badge>
+              </div>
+              <CardTitle className="text-xl font-bold tracking-tight text-foreground md:text-2xl mt-1">
+                Selamat Datang di <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-400">jarimas.id</span>, {userName}!
+              </CardTitle>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
+          <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+            <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
             </span>
-            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-              Sistem Aktif
-            </span>
+            <span>Status: Aktif Terverifikasi</span>
           </div>
         </div>
 
-        <CardTitle className="text-xl font-bold tracking-tight text-foreground md:text-2xl mt-2">
-          {getGreeting()},{" "}
-          <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-400">
-            {userName}
-          </span>{" "}
-          👋
-        </CardTitle>
-        <CardDescription className="text-sm">
-          Selamat datang di Linimasa Portal Pendataan & Layanan Kesejahteraan Terpadu Kota Tegal.
+        <CardDescription className="text-xs sm:text-sm mt-1">
+          Sistem Pendataan Terpadu & Kanal Komunitas Kesejahteraan Warga Kota Tegal.
         </CardDescription>
       </CardHeader>
 
@@ -118,7 +125,7 @@ export function CardWelcoming({
               <Clock className="size-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Waktu Sekarang</p>
+              <p className="text-xs text-muted-foreground">Waktu Saat Ini</p>
               <p className="truncate font-mono text-xs font-semibold text-foreground">
                 {currentTime ? `${currentTime} WIB` : "Memuat..."}
               </p>
@@ -130,9 +137,9 @@ export function CardWelcoming({
               <ShieldCheck className="size-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Status Verifikasi</p>
+              <p className="text-xs text-muted-foreground">Koneksi Database</p>
               <p className="truncate text-xs font-semibold text-foreground">
-                Terhubung ke Supabase
+                Supabase Realtime Siap
               </p>
             </div>
           </div>
