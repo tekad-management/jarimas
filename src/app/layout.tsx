@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "jarimas.id - Portal TEKAD Kota Tegal",
-  description: "Sistem Pendataan Terpadu & Kanal Komunitas Kesejahteraan Warga Kota Tegal",
+  title: "jarimas.id",
+  description: "Jaringan Informasi Masyarakat Kota Tegal",
 };
 
 export default function RootLayout({

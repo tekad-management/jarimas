@@ -53,6 +53,8 @@ import {
   Baby,
   GraduationCap,
   Share2,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 
 // Data Master Berita & Kabar Komunitas Tegal
@@ -240,7 +242,7 @@ export default function LandingPage() {
                 </Badge>
               </div>
               <span className="text-[10px] text-muted-foreground font-medium -mt-0.5">
-                Portal Komunitas TEKAD 33.76
+                Portal Komunitas Kota Tegal
               </span>
             </div>
           </Link>
@@ -273,41 +275,47 @@ export default function LandingPage() {
             </a>
           </nav>
 
-          {/* Desktop CTA Action Button */}
+          {/* Desktop CTA Action Buttons */}
           <div className="hidden sm:flex items-center gap-2.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setJoinModalOpen(true)}
-              className="text-xs h-8.5 px-3.5 gap-1.5 border-border/80"
-            >
-              <Users className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>Gabung Komunitas</span>
-            </Button>
+            <Link href="/login">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs font-semibold h-8.5 px-3.5 gap-1.5 border-border/80 hover:bg-muted/80"
+              >
+                <LogIn className="size-3.5" />
+                <span>Masuk</span>
+              </Button>
+            </Link>
 
-            <Link href="/linimasa">
+            <Link href="/register">
               <Button
                 size="sm"
                 className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-8.5 px-4 shadow-xs gap-1.5"
               >
-                <span>Masuk ke Linimasa</span>
-                <ArrowRight className="size-3.5" />
+                <UserPlus className="size-3.5" />
+                <span>Daftar</span>
               </Button>
             </Link>
           </div>
 
-          {/* Mobile Hamburger Toggle */}
-          <div className="flex sm:hidden items-center gap-2">
-            <Link href="/linimasa">
-              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8 px-2.5">
-                Linimasa
+          {/* Mobile Action Buttons & Hamburger Toggle */}
+          <div className="flex sm:hidden items-center gap-1.5">
+            <Link href="/login">
+              <Button variant="outline" size="sm" className="text-xs h-8 px-2.5 font-medium border-border/80">
+                Masuk
+              </Button>
+            </Link>
+            <Link href="/register">
+              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-8 px-2.5 shadow-xs">
+                Daftar
               </Button>
             </Link>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="size-8 p-0"
+              className="size-8 p-0 border-border/80"
               aria-label="Menu navigasi mobile"
             >
               {mobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
@@ -346,23 +354,21 @@ export default function LandingPage() {
             >
               Statistik Kota Tegal
             </a>
-            <div className="pt-2 flex flex-col gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setJoinModalOpen(true);
-                }}
-                className="w-full text-xs h-9 justify-center gap-1.5"
-              >
-                <Users className="size-3.5" />
-                <span>Gabung Komunitas</span>
-              </Button>
-              <Link href="/linimasa" className="w-full">
+            <div className="pt-2 flex flex-col gap-2 border-t border-border/60">
+              <Link href="/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs h-9 justify-center gap-1.5"
+                >
+                  <LogIn className="size-3.5" />
+                  <span>Masuk</span>
+                </Button>
+              </Link>
+              <Link href="/register" className="w-full" onClick={() => setMobileMenuOpen(false)}>
                 <Button size="sm" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-9 gap-1.5">
-                  <span>Buka Dashboard Linimasa</span>
-                  <ArrowRight className="size-3.5" />
+                  <UserPlus className="size-3.5" />
+                  <span>Daftar Akun</span>
                 </Button>
               </Link>
             </div>
@@ -385,21 +391,21 @@ export default function LandingPage() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
               </span>
-              <span>Portal TEKAD — Sistem Terpadu Komunitas Kota Tegal</span>
+              <span>Sistem Terpadu Warga Kota Tegal</span>
             </div>
 
             {/* Headline */}
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-6xl">
-              Jaringan Informasi &{" "}
+            <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl">
+              Jaringan Informasi Masyarakat &{" "}
               <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent dark:from-emerald-400 dark:via-teal-300 dark:to-cyan-400">
-                Komunitas Warga
+                Portal Komunitas
               </span>{" "}
               Kota Tegal
             </h1>
 
             {/* Subheadline */}
             <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
-              Menghubungkan <strong>RT/RW</strong>, <strong>Posyandu</strong>, <strong>Sekolah</strong>, dan <strong>UMKM Lokal</strong> dalam satu platform terpadu berbasis komunitas yang transparan, aman, dan realtime.
+              Menghubungkan lembaga <strong>RT/RW</strong>, <strong>Posyandu</strong>, <strong>Sekolah</strong>, dan <strong>Dunia Usaha Lokal</strong> dalam satu platform terpadu berbasis komunitas yang transparan, aman, dan realtime.
             </p>
 
             {/* CTA Buttons */}
@@ -430,7 +436,7 @@ export default function LandingPage() {
             <div className="flex flex-wrap items-center justify-center gap-2 pt-4 text-xs text-muted-foreground">
               <span className="flex items-center gap-1 rounded-md bg-muted/60 px-2.5 py-1">
                 <CheckCircle2 className="size-3 text-emerald-500" />
-                Kemendagri 33.76
+                Kode Wilayah 33.76
               </span>
               <span className="flex items-center gap-1 rounded-md bg-muted/60 px-2.5 py-1">
                 <Building2 className="size-3 text-emerald-500" />
@@ -692,11 +698,10 @@ export default function LandingPage() {
                 <button
                   key={kat}
                   onClick={() => setSelectedMarketCategory(kat)}
-                  className={`rounded-md px-3 py-1 text-xs font-semibold transition-all ${
-                    selectedMarketCategory === kat
-                      ? "bg-background text-foreground shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`rounded-md px-3 py-1 text-xs font-semibold transition-all ${selectedMarketCategory === kat
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   {kat}
                 </button>
@@ -765,7 +770,7 @@ export default function LandingPage() {
               Cakupan Layanan Terpadu Kota Tegal
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Pemetaan lengkap seluruh satuan wilayah administratif resmi Kemendagri 33.76.
+              Pemetaan lengkap seluruh satuan wilayah administratif resmi Kota Tegal (Kode 33.76).
             </p>
           </div>
 
@@ -834,7 +839,7 @@ export default function LandingPage() {
               </div>
               <span className="font-bold text-foreground text-sm">jarimas.id</span>
               <span>—</span>
-              <span>Portal TEKAD Kota Tegal</span>
+              <span>Portal Komunitas Kota Tegal</span>
             </div>
 
             <div className="flex items-center gap-4 text-xs font-medium">
@@ -848,7 +853,7 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-border/60 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px]">
-            <p>© 2026 jarimas.id — Inisiatif Komunitas & Pemerintah Kota Tegal (Kemendagri 33.76).</p>
+            <p>© 2026 jarimas.id — Inisiatif Komunitas & Pemerintah Kota Tegal (Kode 33.76).</p>
             <p>Privasi Terjaga • Open Data Kependudukan • Supabase Realtime</p>
           </div>
         </div>

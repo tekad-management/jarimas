@@ -28,6 +28,7 @@ import {
   Building,
   User,
   Lock,
+  UserPlus,
 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -69,7 +70,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       setIsLoggingIn(false);
       setLoginModalOpen(false);
       toast.success("Login Berhasil!", {
-        description: "Selamat datang kembali di Portal TEKAD Kota Tegal.",
+        description: "Selamat datang kembali di Portal jarimas.id Kota Tegal.",
       });
       setLoginForm({ email: "", password: "" });
     }, 800);
@@ -98,12 +99,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     variant="outline"
                     className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold px-1.5 py-0 h-4.5"
                   >
-                    TEKAD
+                    Kota Tegal
                   </Badge>
                 </div>
                 <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium -mt-0.5">
                   <MapPin className="size-2.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>Kota Tegal</span>
+                  <span>Kode 33.76</span>
                 </div>
               </div>
             </Link>
@@ -132,23 +133,49 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             })}
           </nav>
 
-          {/* Sisi Kanan: Tombol Masuk / Login & Menu Mobile */}
-          <div className="flex items-center gap-2.5">
-            <Button
-              size="sm"
-              onClick={() => setLoginModalOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-8.5 px-3.5 shadow-xs transition-all"
-            >
-              <LogIn className="size-3.5" />
-              <span>Masuk / Login</span>
-            </Button>
+          {/* Sisi Kanan: Tombol Masuk & Daftar / Menu Mobile */}
+          <div className="flex items-center gap-2">
+            <Link href="/login" className="hidden sm:block">
+              <Button
+                variant="outline"
+                size="sm"
+                className="items-center gap-1.5 text-xs font-medium h-8.5 px-3.5 border-border/80 hover:bg-muted/80"
+              >
+                <LogIn className="size-3.5" />
+                <span>Masuk</span>
+              </Button>
+            </Link>
+
+            <Link href="/register" className="hidden sm:block">
+              <Button
+                size="sm"
+                className="items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-8.5 px-3.5 shadow-xs"
+              >
+                <UserPlus className="size-3.5" />
+                <span>Daftar</span>
+              </Button>
+            </Link>
+
+            {/* Mobile Actions */}
+            <div className="flex sm:hidden items-center gap-1.5">
+              <Link href="/login">
+                <Button variant="outline" size="sm" className="text-xs h-8 px-2.5 font-medium border-border/80">
+                  Masuk
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-8 px-2.5 shadow-xs">
+                  Daftar
+                </Button>
+              </Link>
+            </div>
 
             {/* Mobile Hamburger Button */}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden size-8.5 p-0 text-foreground border-border/80"
+              className="md:hidden size-8 p-0 text-foreground border-border/80"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
@@ -184,18 +211,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 );
               })}
 
-              <div className="pt-2">
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setLoginModalOpen(true);
-                  }}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold gap-1.5 h-9"
-                >
-                  <LogIn className="size-3.5" />
-                  <span>Masuk / Login Petugas</span>
-                </Button>
+              <div className="pt-2 flex flex-col gap-2 border-t border-border/60">
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="w-full">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs h-9 justify-center gap-1.5"
+                  >
+                    <LogIn className="size-3.5" />
+                    <span>Masuk</span>
+                  </Button>
+                </Link>
+                <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="w-full">
+                  <Button
+                    size="sm"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-9 gap-1.5"
+                  >
+                    <UserPlus className="size-3.5" />
+                    <span>Daftar</span>
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -216,7 +251,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           <div className="flex items-center gap-4 text-[11px]">
-            <span>Kemendagri Kode 33.76</span>
+            <span>Kode Wilayah 33.76</span>
             <span>•</span>
             <span>4 Kecamatan & 27 Kelurahan</span>
             <span>•</span>
