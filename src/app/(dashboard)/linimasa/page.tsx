@@ -47,20 +47,16 @@ function LinimasaContent() {
           </div>
         </div>
 
-        {/* Grid Kartu Utama */}
-        <div className="grid grid-cols-1 gap-6">
-          {/* 1. Welcoming Card (Full Width Banner) */}
-          <CardWelcoming />
-
-          {/* 2. Grid 2 Kolom: Status Identitas & Kanal Discovery */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <div className="lg:col-span-5">
-              <CardIdentityStatus />
-            </div>
-            <div className="lg:col-span-7">
-              <CardKanalDiscovery />
-            </div>
+        {/* Grid Kartu Utama - Layout Vertikal Penuh */}
+        <div className="grid grid-cols-1 gap-6 w-full">
+          {/* 1. Baris Atas: Susunan Vertikal Penuh (CardWelcoming & CardIdentityStatus) */}
+          <div className="flex flex-col gap-6 w-full">
+            <CardWelcoming />
+            <CardIdentityStatus />
           </div>
+
+          {/* 2. Card Kanal Discovery & Integrasi Komunitas (Full Width) */}
+          <CardKanalDiscovery />
 
           {/* 3. Card Statistik & Grafik Rekapitulasi (Full Width) */}
           <CardStatistics />

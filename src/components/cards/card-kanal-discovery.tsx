@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
-import { useQueryStates, parseAsString } from "nuqs";
+import React, { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { joinKanalAction } from "@/actions/kanal-actions";
@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -22,1553 +23,1932 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
   Compass,
-  Building,
   Home,
-  School,
   RotateCcw,
-  CheckCircle2,
-  Filter,
   Loader2,
-  Database,
   HeartPulse,
+  HeartHandshake,
   GraduationCap,
+  School,
   Landmark,
+  Building2,
   Check,
+  CheckCircle2,
+  UserCheck,
   Users,
+  Search,
+  X,
+  ArrowRight,
+  ShieldCheck,
+  Building,
+  Filter,
+  Eye,
+  SlidersHorizontal,
+  ChevronRight,
+  BookOpen,
+  Sparkles,
+  Layers,
 } from "lucide-react";
 
 // ==============================================================================
 // 1. DATA MASTER RESMI KOTA TEGAL (4 KECAMATAN & 27 KELURAHAN)
 // ==============================================================================
-const FALLBACK_KECAMATAN = [
-  { id: "33.76.01", slug: "tegal-barat", nama: "Tegal Barat" },
-  { id: "33.76.02", slug: "tegal-timur", nama: "Tegal Timur" },
-  { id: "33.76.03", slug: "tegal-selatan", nama: "Tegal Selatan" },
-  { id: "33.76.04", slug: "margadana", nama: "Margadana" },
+export const FALLBACK_KECAMATAN = [
+  { id: "tegal-barat", slug: "tegal-barat", nama: "Tegal Barat" },
+  { id: "tegal-timur", slug: "tegal-timur", nama: "Tegal Timur" },
+  { id: "tegal-selatan", slug: "tegal-selatan", nama: "Tegal Selatan" },
+  { id: "margadana", slug: "margadana", nama: "Margadana" },
 ];
 
-const FALLBACK_KELURAHAN: Record<
+export const FALLBACK_KELURAHAN: Record<
   string,
   {
     id: string;
     nama: string;
-    units: { id: string; nama: string; tipe: "Posyandu" | "Sekolah" }[];
   }[]
 > = {
   "tegal-timur": [
-    {
-      id: "mintaragen",
-      nama: "Mintaragen",
-      units: [
-        { id: "pos-melati-1", nama: "Posyandu Melati I (Mintaragen)", tipe: "Posyandu" },
-        { id: "pos-melati-2", nama: "Posyandu Melati II (Mintaragen)", tipe: "Posyandu" },
-        { id: "pos-melati-3", nama: "Posyandu Melati III (Mintaragen)", tipe: "Posyandu" },
-        { id: "sd-mintaragen-1", nama: "SD Negeri Mintaragen 1", tipe: "Sekolah" },
-        { id: "sd-mintaragen-3", nama: "SD Negeri Mintaragen 3", tipe: "Sekolah" },
-        { id: "smp-1-tegal", nama: "SMP Negeri 1 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "panggung",
-      nama: "Panggung",
-      units: [
-        { id: "pos-kenanga-1", nama: "Posyandu Kenanga I (Panggung)", tipe: "Posyandu" },
-        { id: "pos-kenanga-2", nama: "Posyandu Kenanga II (Panggung)", tipe: "Posyandu" },
-        { id: "sd-panggung-3", nama: "SD Negeri Panggung 3", tipe: "Sekolah" },
-        { id: "sd-panggung-5", nama: "SD Negeri Panggung 5", tipe: "Sekolah" },
-        { id: "smp-6-tegal", nama: "SMP Negeri 6 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "mangkukusuman",
-      nama: "Mangkukusuman",
-      units: [
-        { id: "pos-bougenville", nama: "Posyandu Bougenville (Mangkukusuman)", tipe: "Posyandu" },
-        { id: "pos-teratai", nama: "Posyandu Teratai (Mangkukusuman)", tipe: "Posyandu" },
-        { id: "sd-mangkukusuman-1", nama: "SD Negeri Mangkukusuman 1", tipe: "Sekolah" },
-        { id: "smp-3-tegal", nama: "SMP Negeri 3 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "kejambon",
-      nama: "Kejambon",
-      units: [
-        { id: "pos-dahlia-1", nama: "Posyandu Dahlia I (Kejambon)", tipe: "Posyandu" },
-        { id: "pos-dahlia-2", nama: "Posyandu Dahlia II (Kejambon)", tipe: "Posyandu" },
-        { id: "sd-kejambon-1", nama: "SD Negeri Kejambon 1", tipe: "Sekolah" },
-        { id: "sd-kejambon-2", nama: "SD Negeri Kejambon 2", tipe: "Sekolah" },
-        { id: "smp-8-tegal", nama: "SMP Negeri 8 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "slerok",
-      nama: "Slerok",
-      units: [
-        { id: "pos-mawar-1", nama: "Posyandu Mawar I (Slerok)", tipe: "Posyandu" },
-        { id: "pos-mawar-2", nama: "Posyandu Mawar II (Slerok)", tipe: "Posyandu" },
-        { id: "sd-slerok-2", nama: "SD Negeri Slerok 2", tipe: "Sekolah" },
-        { id: "sd-slerok-4", nama: "SD Negeri Slerok 4", tipe: "Sekolah" },
-        { id: "smp-10-tegal", nama: "SMP Negeri 10 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
+    { id: "mintaragen", nama: "Mintaragen" },
+    { id: "panggung", nama: "Panggung" },
+    { id: "mangkukusuman", nama: "Mangkukusuman" },
+    { id: "kejambon", nama: "Kejambon" },
+    { id: "slerok", nama: "Slerok" },
   ],
   "tegal-barat": [
-    {
-      id: "tegalsari",
-      nama: "Tegalsari",
-      units: [
-        { id: "pos-bahari-1", nama: "Posyandu Bahari I (Tegalsari)", tipe: "Posyandu" },
-        { id: "pos-bahari-2", nama: "Posyandu Bahari II (Tegalsari)", tipe: "Posyandu" },
-        { id: "sd-tegalsari-1", nama: "SD Negeri Tegalsari 1", tipe: "Sekolah" },
-        { id: "smp-7-tegal", nama: "SMP Negeri 7 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "kraton",
-      nama: "Kraton",
-      units: [
-        { id: "pos-cempaka-kraton", nama: "Posyandu Cempaka (Kraton)", tipe: "Posyandu" },
-        { id: "pos-flamboyan-kraton", nama: "Posyandu Flamboyan (Kraton)", tipe: "Posyandu" },
-        { id: "sd-kraton-1", nama: "SD Negeri Kraton 1", tipe: "Sekolah" },
-        { id: "sd-kraton-3", nama: "SD Negeri Kraton 3", tipe: "Sekolah" },
-        { id: "smp-2-tegal", nama: "SMP Negeri 2 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "kemandungan",
-      nama: "Kemandungan",
-      units: [
-        { id: "pos-asri-1", nama: "Posyandu Asri I (Kemandungan)", tipe: "Posyandu" },
-        { id: "pos-asri-2", nama: "Posyandu Asri II (Kemandungan)", tipe: "Posyandu" },
-        { id: "sd-kemandungan-1", nama: "SD Negeri Kemandungan 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "debong-lor",
-      nama: "Debong Lor",
-      units: [
-        { id: "pos-tunas-debonglor", nama: "Posyandu Tunas Harapan (Debong Lor)", tipe: "Posyandu" },
-        { id: "sd-debong-lor-1", nama: "SD Negeri Debong Lor 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "muarareja",
-      nama: "Muarareja",
-      units: [
-        { id: "pos-muara-sejahtera", nama: "Posyandu Muara Sejahtera (Muarareja)", tipe: "Posyandu" },
-        { id: "sd-muarareja-1", nama: "SD Negeri Muarareja 1", tipe: "Sekolah" },
-        { id: "smp-13-tegal", nama: "SMP Negeri 13 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "pekauman",
-      nama: "Pekauman",
-      units: [
-        { id: "pos-anggrek-pekauman", nama: "Posyandu Anggrek Putih (Pekauman)", tipe: "Posyandu" },
-        { id: "sd-pekauman-1", nama: "SD Negeri Pekauman 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "pesurungan-kidul",
-      nama: "Pesurungan Kidul",
-      units: [
-        { id: "pos-kamboja-pesurungan", nama: "Posyandu Kamboja (Pesurungan Kidul)", tipe: "Posyandu" },
-        { id: "sd-pesurungan-kidul-1", nama: "SD Negeri Pesurungan Kidul 1", tipe: "Sekolah" },
-        { id: "smk-1-tegal", nama: "SMK Negeri 1 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
+    { id: "tegalsari", nama: "Tegalsari" },
+    { id: "kraton", nama: "Kraton" },
+    { id: "kemandungan", nama: "Kemandungan" },
+    { id: "debong-lor", nama: "Debong Lor" },
+    { id: "muarareja", nama: "Muarareja" },
+    { id: "pekauman", nama: "Pekauman" },
+    { id: "pesurungan-kidul", nama: "Pesurungan Kidul" },
   ],
   "tegal-selatan": [
-    {
-      id: "randugunting",
-      nama: "Randugunting",
-      units: [
-        { id: "pos-nusa-1", nama: "Posyandu Nusa Indah I (Randugunting)", tipe: "Posyandu" },
-        { id: "pos-nusa-2", nama: "Posyandu Nusa Indah II (Randugunting)", tipe: "Posyandu" },
-        { id: "sd-randugunting-1", nama: "SD Negeri Randugunting 1", tipe: "Sekolah" },
-        { id: "sd-randugunting-6", nama: "SD Negeri Randugunting 6", tipe: "Sekolah" },
-        { id: "smp-5-tegal", nama: "SMP Negeri 5 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "debong-kulon",
-      nama: "Debong Kulon",
-      units: [
-        { id: "pos-sejahtera-debongkulon", nama: "Posyandu Sejahtera (Debong Kulon)", tipe: "Posyandu" },
-        { id: "sd-debong-kulon-1", nama: "SD Negeri Debong Kulon 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "debong-tengah",
-      nama: "Debong Tengah",
-      units: [
-        { id: "pos-kasih-ibu", nama: "Posyandu Kasih Ibu (Debong Tengah)", tipe: "Posyandu" },
-        { id: "sd-debong-tengah-1", nama: "SD Negeri Debong Tengah 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "debong-kidul",
-      nama: "Debong Kidul",
-      units: [
-        { id: "pos-mekar-wangi", nama: "Posyandu Mekar Wangi (Debong Kidul)", tipe: "Posyandu" },
-        { id: "sd-debong-kidul-1", nama: "SD Negeri Debong Kidul 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "tunon",
-      nama: "Tunon",
-      units: [
-        { id: "pos-harapan-bunda", nama: "Posyandu Harapan Bunda (Tunon)", tipe: "Posyandu" },
-        { id: "sd-tunon-1", nama: "SD Negeri Tunon 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "kalinyamat-wetan",
-      nama: "Kalinyamat Wetan",
-      units: [
-        { id: "pos-lestari-kalinyamat", nama: "Posyandu Lestari (Kalinyamat Wetan)", tipe: "Posyandu" },
-        { id: "sd-kalinyamat-wetan-1", nama: "SD Negeri Kalinyamat Wetan 1", tipe: "Sekolah" },
-        { id: "smp-14-tegal", nama: "SMP Negeri 14 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "keturen",
-      nama: "Keturen",
-      units: [
-        { id: "pos-srikandi-keturen", nama: "Posyandu Srikandi (Keturen)", tipe: "Posyandu" },
-        { id: "sd-keturen-1", nama: "SD Negeri Keturen 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "bandung",
-      nama: "Bandung",
-      units: [
-        { id: "pos-anggrek-bandung", nama: "Posyandu Anggrek Mulia (Bandung)", tipe: "Posyandu" },
-        { id: "sd-bandung-1", nama: "SD Negeri Bandung 1", tipe: "Sekolah" },
-      ],
-    },
+    { id: "randugunting", nama: "Randugunting" },
+    { id: "debong-kulon", nama: "Debong Kulon" },
+    { id: "debong-tengah", nama: "Debong Tengah" },
+    { id: "debong-kidul", nama: "Debong Kidul" },
+    { id: "tunon", nama: "Tunon" },
+    { id: "kalinyamat-wetan", nama: "Kalinyamat Wetan" },
+    { id: "keturen", nama: "Keturen" },
+    { id: "bandung", nama: "Bandung" },
   ],
   margadana: [
-    {
-      id: "margadana-kel",
-      nama: "Margadana",
-      units: [
-        { id: "pos-teratai-margadana", nama: "Posyandu Teratai Indah (Margadana)", tipe: "Posyandu" },
-        { id: "pos-ceria-margadana", nama: "Posyandu Ceria (Margadana)", tipe: "Posyandu" },
-        { id: "sd-margadana-1", nama: "SD Negeri Margadana 1", tipe: "Sekolah" },
-        { id: "smp-12-tegal", nama: "SMP Negeri 12 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "cabawan",
-      nama: "Cabawan",
-      units: [
-        { id: "pos-tunas-cabawan", nama: "Posyandu Tunas Mandiri (Cabawan)", tipe: "Posyandu" },
-        { id: "sd-cabawan-1", nama: "SD Negeri Cabawan 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "kaligangsa",
-      nama: "Kaligangsa",
-      units: [
-        { id: "pos-muara-kaligangsa", nama: "Posyandu Muara Kasih (Kaligangsa)", tipe: "Posyandu" },
-        { id: "sd-kaligangsa-1", nama: "SD Negeri Kaligangsa 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "kalinyamat-kulon",
-      nama: "Kalinyamat Kulon",
-      units: [
-        { id: "pos-kartini-kalinyamat", nama: "Posyandu Kartini (Kalinyamat Kulon)", tipe: "Posyandu" },
-        { id: "sd-kalinyamat-kulon-1", nama: "SD Negeri Kalinyamat Kulon 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "krandon",
-      nama: "Krandon",
-      units: [
-        { id: "pos-wijaya-krandon", nama: "Posyandu Wijaya Kusuma (Krandon)", tipe: "Posyandu" },
-        { id: "sd-krandon-1", nama: "SD Negeri Krandon 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "pesurungan-lor",
-      nama: "Pesurungan Lor",
-      units: [
-        { id: "pos-melati-pesurunganlor", nama: "Posyandu Melati Sehat (Pesurungan Lor)", tipe: "Posyandu" },
-        { id: "sd-pesurungan-lor-1", nama: "SD Negeri Pesurungan Lor 1", tipe: "Sekolah" },
-      ],
-    },
-    {
-      id: "sumurpanggang",
-      nama: "Sumurpanggang",
-      units: [
-        { id: "pos-sumur-sejahtera", nama: "Posyandu Sumur Sejahtera (Sumurpanggang)", tipe: "Posyandu" },
-        { id: "pos-melati-asri", nama: "Posyandu Melati Asri (Sumurpanggang)", tipe: "Posyandu" },
-        { id: "sd-sumurpanggang-1", nama: "SD Negeri Sumurpanggang 1", tipe: "Sekolah" },
-        { id: "sd-sumurpanggang-3", nama: "SD Negeri Sumurpanggang 3", tipe: "Sekolah" },
-        { id: "sma-4-tegal", nama: "SMA Negeri 4 Kota Tegal", tipe: "Sekolah" },
-      ],
-    },
+    { id: "margadana-kel", nama: "Margadana" },
+    { id: "cabawan", nama: "Cabawan" },
+    { id: "kaligangsa", nama: "Kaligangsa" },
+    { id: "kalinyamat-kulon", nama: "Kalinyamat Kulon" },
+    { id: "krandon", nama: "Krandon" },
+    { id: "pesurungan-lor", nama: "Pesurungan Lor" },
+    { id: "sumurpanggang", nama: "Sumurpanggang" },
   ],
 };
 
+// Pemetaan Cerdas 27 Kelurahan ke Kecamatan di Kota Tegal
+export const MASTER_KELURAHAN_KECAMATAN_MAP: Record<string, { kel: string; kec: string; kelId: string; kecId: string }> = {
+  // Tegal Timur
+  "mintaragen": { kel: "Mintaragen", kec: "Tegal Timur", kelId: "mintaragen", kecId: "tegal-timur" },
+  "panggung": { kel: "Panggung", kec: "Tegal Timur", kelId: "panggung", kecId: "tegal-timur" },
+  "mangkukusuman": { kel: "Mangkukusuman", kec: "Tegal Timur", kelId: "mangkukusuman", kecId: "tegal-timur" },
+  "kejambon": { kel: "Kejambon", kec: "Tegal Timur", kelId: "kejambon", kecId: "tegal-timur" },
+  "slerok": { kel: "Slerok", kec: "Tegal Timur", kelId: "slerok", kecId: "tegal-timur" },
+
+  // Tegal Barat
+  "tegalsari": { kel: "Tegalsari", kec: "Tegal Barat", kelId: "tegalsari", kecId: "tegal-barat" },
+  "kraton": { kel: "Kraton", kec: "Tegal Barat", kelId: "kraton", kecId: "tegal-barat" },
+  "kemandungan": { kel: "Kemandungan", kec: "Tegal Barat", kelId: "kemandungan", kecId: "tegal-barat" },
+  "debong lor": { kel: "Debong Lor", kec: "Tegal Barat", kelId: "debong-lor", kecId: "tegal-barat" },
+  "muarareja": { kel: "Muarareja", kec: "Tegal Barat", kelId: "muarareja", kecId: "tegal-barat" },
+  "pekauman": { kel: "Pekauman", kec: "Tegal Barat", kelId: "pekauman", kecId: "tegal-barat" },
+  "pesurungan kidul": { kel: "Pesurungan Kidul", kec: "Tegal Barat", kelId: "pesurungan-kidul", kecId: "tegal-barat" },
+
+  // Tegal Selatan
+  "randugunting": { kel: "Randugunting", kec: "Tegal Selatan", kelId: "randugunting", kecId: "tegal-selatan" },
+  "debong kulon": { kel: "Debong Kulon", kec: "Tegal Selatan", kelId: "debong-kulon", kecId: "tegal-selatan" },
+  "debong tengah": { kel: "Debong Tengah", kec: "Tegal Selatan", kelId: "debong-tengah", kecId: "tegal-selatan" },
+  "debong kidul": { kel: "Debong Kidul", kec: "Tegal Selatan", kelId: "debong-kidul", kecId: "tegal-selatan" },
+  "tunon": { kel: "Tunon", kec: "Tegal Selatan", kelId: "tunon", kecId: "tegal-selatan" },
+  "kalinyamat wetan": { kel: "Kalinyamat Wetan", kec: "Tegal Selatan", kelId: "kalinyamat-wetan", kecId: "tegal-selatan" },
+  "keturen": { kel: "Keturen", kec: "Tegal Selatan", kelId: "keturen", kecId: "tegal-selatan" },
+  "bandung": { kel: "Bandung", kec: "Tegal Selatan", kelId: "bandung", kecId: "tegal-selatan" },
+
+  // Margadana
+  "margadana": { kel: "Margadana", kec: "Margadana", kelId: "margadana-kel", kecId: "margadana" },
+  "cabawan": { kel: "Cabawan", kec: "Margadana", kelId: "cabawan", kecId: "margadana" },
+  "kaligangsa": { kel: "Kaligangsa", kec: "Margadana", kelId: "kaligangsa", kecId: "margadana" },
+  "kalinyamat kulon": { kel: "Kalinyamat Kulon", kec: "Margadana", kelId: "kalinyamat-kulon", kecId: "margadana" },
+  "krandon": { kel: "Krandon", kec: "Margadana", kelId: "krandon", kecId: "margadana" },
+  "pesurungan lor": { kel: "Pesurungan Lor", kec: "Margadana", kelId: "pesurungan-lor", kecId: "margadana" },
+  "sumurpanggang": { kel: "Sumurpanggang", kec: "Margadana", kelId: "sumurpanggang", kecId: "margadana" },
+};
+
 // ==============================================================================
-// 2. DATA MASTER OPD (ORGANISASI PERANGKAT DAERAH) KOTA TEGAL
+// 2. DATA MASTER RESMI POSYANDU SE-KOTA TEGAL (27 KELURAHAN)
 // ==============================================================================
-export const MASTER_OPD_TEGAL = [
+export interface MasterPosyanduItem {
+  id: string;
+  nama: string;
+  kelurahan: string;
+  kelurahanId: string;
+  kecamatan: string;
+  kecamatanId: string;
+  jadwal?: string;
+}
+
+export const ALL_MASTER_POSYANDU_TEGAL: MasterPosyanduItem[] = [
+  // --- TEGAL TIMUR ---
+  { id: "pos-kejambon-kamboja-1", nama: "Posyandu Kamboja 1", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-kejambon-kamboja-2", nama: "Posyandu Kamboja 2", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-kejambon-kemuning-1", nama: "Posyandu Kemuning 1", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-kejambon-kemuning-2", nama: "Posyandu Kemuning 2", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-kejambon-terataimerah", nama: "Posyandu Teratai Merah", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-kejambon-tanjungsari", nama: "Posyandu Tanjungsari", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-kejambon-mawarmelati", nama: "Posyandu Mawar Melati", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-kejambon-seruni", nama: "Posyandu Seruni", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-kejambon-arimbi", nama: "Posyandu Arimbi", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+
+  { id: "pos-slerok-srikandi", nama: "Posyandu Srikandi", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-arjuna-1", nama: "Posyandu Arjuna 1", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-arjuna-2", nama: "Posyandu Arjuna 2", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-werkudoro-1", nama: "Posyandu Werkudoro 1", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-werkudoro-2", nama: "Posyandu Werkudoro 2", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-nakula-1", nama: "Posyandu Nakula 1", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-nakula-2", nama: "Posyandu Nakula 2", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-abimanyu", nama: "Posyandu Abimanyu", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-subali", nama: "Posyandu Subali", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-sukosrono", nama: "Posyandu Sukosrono", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-bima-1", nama: "Posyandu Bima 1", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-bima-2", nama: "Posyandu Bima 2", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-sumbodro-1", nama: "Posyandu Sumbodro 1", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-slerok-sumbodro-2", nama: "Posyandu Sumbodro 2", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+
+  { id: "pos-panggung-dahlia", nama: "Posyandu Dahlia", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-anyelir", nama: "Posyandu Anyelir", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-jayaabadi", nama: "Posyandu Jaya Abadi", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-harapan", nama: "Posyandu Harapan", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-mekarsari", nama: "Posyandu Mekarsari", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-anggrek-1", nama: "Posyandu Anggrek 1", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-anggrek-2", nama: "Posyandu Anggrek 2", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-bahteraserayu", nama: "Posyandu Bahtera Serayu", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-nusaindah-1", nama: "Posyandu Nusa Indah 1", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-nusaindah-2", nama: "Posyandu Nusa Indah 2", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-kuntummelati", nama: "Posyandu Kuntum Melati", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-dewishinta", nama: "Posyandu Dewi Shinta", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-seruni", nama: "Posyandu Seruni", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-bahtera-a", nama: "Posyandu Bahtera A", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-bahtera-b", nama: "Posyandu Bahtera B", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-melati", nama: "Posyandu Melati", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-panggung-tulip", nama: "Posyandu Tulip", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+
+  { id: "pos-mintaragen-anyelir", nama: "Posyandu Anyelir", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mintaragen-teratai", nama: "Posyandu Teratai", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mintaragen-melati", nama: "Posyandu Melati", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mintaragen-kenanga", nama: "Posyandu Kenanga", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mintaragen-bougenville", nama: "Posyandu Bougenville", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mintaragen-flamboyan", nama: "Posyandu Flamboyan", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mintaragen-anggrek", nama: "Posyandu Anggrek", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mintaragen-sedapmalam", nama: "Posyandu Sedap Malam", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mintaragen-seruni", nama: "Posyandu Seruni", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mintaragen-nusaindah-1", nama: "Posyandu Nusa Indah 1", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mintaragen-nusaindah-2", nama: "Posyandu Nusa Indah 2", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mintaragen-mawar", nama: "Posyandu Mawar", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+
+  { id: "pos-mangkukusuman-fatmawati", nama: "Posyandu Fatmawati", kelurahan: "Mangkukusuman", kelurahanId: "mangkukusuman", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mangkukusuman-kartini", nama: "Posyandu Kartini", kelurahan: "Mangkukusuman", kelurahanId: "mangkukusuman", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mangkukusuman-cempaka", nama: "Posyandu Cempaka", kelurahan: "Mangkukusuman", kelurahanId: "mangkukusuman", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mangkukusuman-kenanga", nama: "Posyandu Kenanga", kelurahan: "Mangkukusuman", kelurahanId: "mangkukusuman", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "pos-mangkukusuman-melati", nama: "Posyandu Melati", kelurahan: "Mangkukusuman", kelurahanId: "mangkukusuman", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+
+  // --- TEGAL BARAT ---
+  { id: "pos-pekauman-tunas", nama: "Posyandu Tunas", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-pekauman-duku", nama: "Posyandu Duku", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-pekauman-garuda", nama: "Posyandu Garuda", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-pekauman-belimbing", nama: "Posyandu Belimbing", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-pekauman-jalak", nama: "Posyandu Jalak", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-pekauman-nanas", nama: "Posyandu Nanas", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-pekauman-delima", nama: "Posyandu Delima", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+
+  { id: "pos-pesurungankidul-melati-1", nama: "Posyandu Melati 1", kelurahan: "Pesurungan Kidul", kelurahanId: "pesurungan-kidul", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-pesurungankidul-melati-2", nama: "Posyandu Melati 2", kelurahan: "Pesurungan Kidul", kelurahanId: "pesurungan-kidul", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-pesurungankidul-melati-3", nama: "Posyandu Melati 3", kelurahan: "Pesurungan Kidul", kelurahanId: "pesurungan-kidul", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-pesurungankidul-melati-4", nama: "Posyandu Melati 4", kelurahan: "Pesurungan Kidul", kelurahanId: "pesurungan-kidul", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-pesurungankidul-melati-5", nama: "Posyandu Melati 5", kelurahan: "Pesurungan Kidul", kelurahanId: "pesurungan-kidul", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-pesurungankidul-melati-6", nama: "Posyandu Melati 6", kelurahan: "Pesurungan Kidul", kelurahanId: "pesurungan-kidul", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+
+  { id: "pos-kemandungan-anggrek-1", nama: "Posyandu Anggrek 1", kelurahan: "Kemandungan", kelurahanId: "kemandungan", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-kemandungan-anggrek-2", nama: "Posyandu Anggrek 2", kelurahan: "Kemandungan", kelurahanId: "kemandungan", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-kemandungan-melati-1", nama: "Posyandu Melati 1", kelurahan: "Kemandungan", kelurahanId: "kemandungan", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-kemandungan-melati-2", nama: "Posyandu Melati 2", kelurahan: "Kemandungan", kelurahanId: "kemandungan", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+
+  { id: "pos-kraton-kartini-1", nama: "Posyandu Kartini 1", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-kraton-kartini-2", nama: "Posyandu Kartini 2", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-kraton-kartini-3", nama: "Posyandu Kartini 3", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-kraton-kartini-4", nama: "Posyandu Kartini 4", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-kraton-kartini-5", nama: "Posyandu Kartini 5", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-kraton-kartini-6", nama: "Posyandu Kartini 6", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-kraton-kartini-7", nama: "Posyandu Kartini 7", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+
+  { id: "pos-tegalsari-kenanga-1", nama: "Posyandu Kenanga 1", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-tegalsari-kenanga-2", nama: "Posyandu Kenanga 2", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-tegalsari-kenanga-3", nama: "Posyandu Kenanga 3", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-tegalsari-kenanga-4", nama: "Posyandu Kenanga 4", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-tegalsari-kenanga-5", nama: "Posyandu Kenanga 5", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-tegalsari-kenanga-6", nama: "Posyandu Kenanga 6", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-tegalsari-kenanga-7", nama: "Posyandu Kenanga 7", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-tegalsari-kenanga-8", nama: "Posyandu Kenanga 8", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-tegalsari-kenanga-9", nama: "Posyandu Kenanga 9", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-tegalsari-kenanga-10", nama: "Posyandu Kenanga 10", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-tegalsari-kenanga-11", nama: "Posyandu Kenanga 11", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-tegalsari-kenanga-12", nama: "Posyandu Kenanga 12", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-tegalsari-kenanga-13", nama: "Posyandu Kenanga 13", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+
+  { id: "pos-debonglor-melati-1", nama: "Posyandu Melati 1", kelurahan: "Debong Lor", kelurahanId: "debong-lor", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-debonglor-melati-2", nama: "Posyandu Melati 2", kelurahan: "Debong Lor", kelurahanId: "debong-lor", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-debonglor-melati-3", nama: "Posyandu Melati 3", kelurahan: "Debong Lor", kelurahanId: "debong-lor", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-debonglor-melati-4", nama: "Posyandu Melati 4", kelurahan: "Debong Lor", kelurahanId: "debong-lor", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-debonglor-melati-5", nama: "Posyandu Melati 5", kelurahan: "Debong Lor", kelurahanId: "debong-lor", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+
+  { id: "pos-muarareja-mawar-1", nama: "Posyandu Mawar 1", kelurahan: "Muarareja", kelurahanId: "muarareja", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-muarareja-mawar-2", nama: "Posyandu Mawar 2", kelurahan: "Muarareja", kelurahanId: "muarareja", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-muarareja-mawar-3", nama: "Posyandu Mawar 3", kelurahan: "Muarareja", kelurahanId: "muarareja", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-muarareja-mawar-4", nama: "Posyandu Mawar 4", kelurahan: "Muarareja", kelurahanId: "muarareja", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "pos-muarareja-mawar-5", nama: "Posyandu Mawar 5", kelurahan: "Muarareja", kelurahanId: "muarareja", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+
+  // --- TEGAL SELATAN ---
+  { id: "pos-bandung-melati-1", nama: "Posyandu Melati I", kelurahan: "Bandung", kelurahanId: "bandung", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-bandung-melati-2", nama: "Posyandu Melati II", kelurahan: "Bandung", kelurahanId: "bandung", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-bandung-melati-3", nama: "Posyandu Melati III", kelurahan: "Bandung", kelurahanId: "bandung", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-bandung-melati-4", nama: "Posyandu Melati IV", kelurahan: "Bandung", kelurahanId: "bandung", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-bandung-melati-5", nama: "Posyandu Melati V", kelurahan: "Bandung", kelurahanId: "bandung", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  { id: "pos-tunon-mawar-1", nama: "Posyandu Mawar I", kelurahan: "Tunon", kelurahanId: "tunon", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-tunon-mawar-2", nama: "Posyandu Mawar II", kelurahan: "Tunon", kelurahanId: "tunon", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-tunon-mawar-3", nama: "Posyandu Mawar III", kelurahan: "Tunon", kelurahanId: "tunon", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-tunon-mawar-4", nama: "Posyandu Mawar IV", kelurahan: "Tunon", kelurahanId: "tunon", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  { id: "pos-keturen-kemuning-1", nama: "Posyandu Kemuning I", kelurahan: "Keturen", kelurahanId: "keturen", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-keturen-kemuning-2", nama: "Posyandu Kemuning II", kelurahan: "Keturen", kelurahanId: "keturen", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-keturen-kemuning-3-utara", nama: "Posyandu Kemuning III Utara", kelurahan: "Keturen", kelurahanId: "keturen", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-keturen-kemuning-3-selatan", nama: "Posyandu Kemuning III Selatan", kelurahan: "Keturen", kelurahanId: "keturen", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  { id: "pos-kalinyamatwetan-dahlia-1", nama: "Posyandu Dahlia I", kelurahan: "Kalinyamat Wetan", kelurahanId: "kalinyamat-wetan", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-kalinyamatwetan-dahlia-2", nama: "Posyandu Dahlia II", kelurahan: "Kalinyamat Wetan", kelurahanId: "kalinyamat-wetan", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-kalinyamatwetan-dahlia-3", nama: "Posyandu Dahlia III", kelurahan: "Kalinyamat Wetan", kelurahanId: "kalinyamat-wetan", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-kalinyamatwetan-dahlia-4", nama: "Posyandu Dahlia IV", kelurahan: "Kalinyamat Wetan", kelurahanId: "kalinyamat-wetan", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  { id: "pos-randugunting-ketilang", nama: "Posyandu Ketilang", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-randugunting-nuri", nama: "Posyandu Nuri", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-randugunting-rajawali", nama: "Posyandu Rajawali", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-randugunting-garuda", nama: "Posyandu Garuda", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-randugunting-meliwis", nama: "Posyandu Meliwis", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-randugunting-merpati", nama: "Posyandu Merpati", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-randugunting-garuda-b", nama: "Posyandu Garuda B", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-randugunting-puter", nama: "Posyandu Puter", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-randugunting-ababil", nama: "Posyandu Ababil", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-randugunting-kasuari", nama: "Posyandu Kasuari", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-randugunting-cendrawasih", nama: "Posyandu Cendrawasih", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-randugunting-merak", nama: "Posyandu Merak", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  { id: "pos-debongtengah-anggrek-1", nama: "Posyandu Anggrek 1", kelurahan: "Debong Tengah", kelurahanId: "debong-tengah", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-debongtengah-anggrek-2", nama: "Posyandu Anggrek 2", kelurahan: "Debong Tengah", kelurahanId: "debong-tengah", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-debongtengah-anyelir-a", nama: "Posyandu Anyelir A", kelurahan: "Debong Tengah", kelurahanId: "debong-tengah", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-debongtengah-anyelir-b", nama: "Posyandu Anyelir B", kelurahan: "Debong Tengah", kelurahanId: "debong-tengah", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-debongtengah-tulip", nama: "Posyandu Tulip", kelurahan: "Debong Tengah", kelurahanId: "debong-tengah", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-debongtengah-lengkeng", nama: "Posyandu Lengkeng", kelurahan: "Debong Tengah", kelurahanId: "debong-tengah", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-debongtengah-teratai", nama: "Posyandu Teratai", kelurahan: "Debong Tengah", kelurahanId: "debong-tengah", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-debongtengah-bougenville", nama: "Posyandu Bougenville", kelurahan: "Debong Tengah", kelurahanId: "debong-tengah", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  { id: "pos-debongkulon-mawar", nama: "Posyandu Mawar", kelurahan: "Debong Kulon", kelurahanId: "debong-kulon", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-debongkulon-kenanga", nama: "Posyandu Kenanga", kelurahan: "Debong Kulon", kelurahanId: "debong-kulon", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-debongkulon-cempaka", nama: "Posyandu Cempaka", kelurahan: "Debong Kulon", kelurahanId: "debong-kulon", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-debongkulon-nusaindah", nama: "Posyandu Nusa Indah", kelurahan: "Debong Kulon", kelurahanId: "debong-kulon", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-debongkulon-melati", nama: "Posyandu Melati", kelurahan: "Debong Kulon", kelurahanId: "debong-kulon", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  { id: "pos-debongkidul-mekarwangi", nama: "Posyandu Mekar Wangi", kelurahan: "Debong Kidul", kelurahanId: "debong-kidul", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "pos-debongkidul-melati", nama: "Posyandu Melati", kelurahan: "Debong Kidul", kelurahanId: "debong-kidul", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  // --- MARGADANA ---
+  { id: "pos-cabawan-anggrek-rw1", nama: "Posyandu Anggrek RW 1", kelurahan: "Cabawan", kelurahanId: "cabawan", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-cabawan-bougenville-rw2", nama: "Posyandu Bougenville RW 2", kelurahan: "Cabawan", kelurahanId: "cabawan", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-cabawan-cempaka-rw3", nama: "Posyandu Cempaka RW 3", kelurahan: "Cabawan", kelurahanId: "cabawan", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-cabawan-dahlia-rw4", nama: "Posyandu Dahlia RW 4", kelurahan: "Cabawan", kelurahanId: "cabawan", kecamatan: "Margadana", kecamatanId: "margadana" },
+
+  { id: "pos-kaligangsa-dahlia", nama: "Posyandu Dahlia", kelurahan: "Kaligangsa", kelurahanId: "kaligangsa", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-kaligangsa-rosella", nama: "Posyandu Rosella", kelurahan: "Kaligangsa", kelurahanId: "kaligangsa", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-kaligangsa-cempaka", nama: "Posyandu Cempaka", kelurahan: "Kaligangsa", kelurahanId: "kaligangsa", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-kaligangsa-bougenville", nama: "Posyandu Bougenville", kelurahan: "Kaligangsa", kelurahanId: "kaligangsa", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-kaligangsa-anggrek", nama: "Posyandu Anggrek", kelurahan: "Kaligangsa", kelurahanId: "kaligangsa", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-kaligangsa-melati", nama: "Posyandu Melati", kelurahan: "Kaligangsa", kelurahanId: "kaligangsa", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-kaligangsa-flamboyan", nama: "Posyandu Flamboyan", kelurahan: "Kaligangsa", kelurahanId: "kaligangsa", kecamatan: "Margadana", kecamatanId: "margadana" },
+
+  { id: "pos-krandon-intan", nama: "Posyandu Intan", kelurahan: "Krandon", kelurahanId: "krandon", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-krandon-mutiara", nama: "Posyandu Mutiara", kelurahan: "Krandon", kelurahanId: "krandon", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-krandon-permata", nama: "Posyandu Permata", kelurahan: "Krandon", kelurahanId: "krandon", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-krandon-berlian", nama: "Posyandu Berlian", kelurahan: "Krandon", kelurahanId: "krandon", kecamatan: "Margadana", kecamatanId: "margadana" },
+
+  { id: "pos-margadana-suflir", nama: "Posyandu Suflir", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-anyelir", nama: "Posyandu Anyelir", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-cempaka-1", nama: "Posyandu Cempaka 1", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-cempaka-2", nama: "Posyandu Cempaka 2", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-kesambisari", nama: "Posyandu Kesambisari", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-jagadipa", nama: "Posyandu Jagadipa", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-bougenville", nama: "Posyandu Bougenville", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-dahlia", nama: "Posyandu Dahlia", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-wijayakusuma", nama: "Posyandu Wijaya Kusuma", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-kenanga", nama: "Posyandu Kenanga", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-anggrekbulan", nama: "Posyandu Anggrek Bulan", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-sedapmalam", nama: "Posyandu Sedap Malam", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-lavender", nama: "Posyandu Lavender", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-margadana-edelveis", nama: "Posyandu Edelveis", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+
+  { id: "pos-sumurpanggang-melati", nama: "Posyandu Melati", kelurahan: "Sumurpanggang", kelurahanId: "sumurpanggang", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-sumurpanggang-nurhikmah", nama: "Posyandu Nur Hikmah", kelurahan: "Sumurpanggang", kelurahanId: "sumurpanggang", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-sumurpanggang-ragasela", nama: "Posyandu Ragasela", kelurahan: "Sumurpanggang", kelurahanId: "sumurpanggang", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-sumurpanggang-cempaka", nama: "Posyandu Cempaka", kelurahan: "Sumurpanggang", kelurahanId: "sumurpanggang", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-sumurpanggang-mawar", nama: "Posyandu Mawar", kelurahan: "Sumurpanggang", kelurahanId: "sumurpanggang", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-sumurpanggang-manggis", nama: "Posyandu Manggis", kelurahan: "Sumurpanggang", kelurahanId: "sumurpanggang", kecamatan: "Margadana", kecamatanId: "margadana" },
+
+  { id: "pos-pesurunganlor-mawar", nama: "Posyandu Mawar", kelurahan: "Pesurungan Lor", kelurahanId: "pesurungan-lor", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-pesurunganlor-anggrek", nama: "Posyandu Anggrek", kelurahan: "Pesurungan Lor", kelurahanId: "pesurungan-lor", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-pesurunganlor-melati", nama: "Posyandu Melati", kelurahan: "Pesurungan Lor", kelurahanId: "pesurungan-lor", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-pesurunganlor-jayasamudera", nama: "Posyandu Jaya Samudera", kelurahan: "Pesurungan Lor", kelurahanId: "pesurungan-lor", kecamatan: "Margadana", kecamatanId: "margadana" },
+
+  { id: "pos-kalinyamatkulon-melati-1", nama: "Posyandu Melati 1", kelurahan: "Kalinyamat Kulon", kelurahanId: "kalinyamat-kulon", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-kalinyamatkulon-melati-2", nama: "Posyandu Melati 2", kelurahan: "Kalinyamat Kulon", kelurahanId: "kalinyamat-kulon", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-kalinyamatkulon-melati-3", nama: "Posyandu Melati 3", kelurahan: "Kalinyamat Kulon", kelurahanId: "kalinyamat-kulon", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "pos-kalinyamatkulon-melati-4", nama: "Posyandu Melati 4", kelurahan: "Kalinyamat Kulon", kelurahanId: "kalinyamat-kulon", kecamatan: "Margadana", kecamatanId: "margadana" },
+];
+
+// ==============================================================================
+// 3. DATA MASTER SATUAN PENDIDIKAN RESMI KOTA TEGAL (LENGKAP NAUNGAN & SUB-JENJANG)
+// ==============================================================================
+export type JenjangSekolahType = "PAUD" | "SD" | "SMP" | "SMA_SMK" | "SLB" | "KESETARAAN";
+export type NaunganSekolahType = "DISDIK" | "KEMENAG";
+
+export interface MasterSekolahItem {
+  id: string;
+  npsn: string;
+  nama: string;
+  jenjang: JenjangSekolahType;
+  subJenjang: string; // "TK", "KB", "Pos PAUD", "PAUD TPQ", "TPA", "RA", "SD", "MI", "SMP", "MTs", "SMA", "SMK", "MA", "SLB SD", "SLB SMP", "SLB SMA", "SLB", "Paket A", "Paket B", "Paket C", "PKBM", "SKB"
+  naungan: NaunganSekolahType;
+  status: "NEGERI" | "SWASTA";
+  kelurahan: string;
+  kelurahanId: string;
+  kecamatan: string;
+  kecamatanId: string;
+  alamat?: string;
+}
+
+export const MASTER_ALL_SEKOLAH_TEGAL: MasterSekolahItem[] = [
+  // --- TEGAL BARAT ---
+  // PAUD
+  { id: "20351671", npsn: "20351671", nama: "TK NEGERI PEMBINA KOTA TEGAL", jenjang: "PAUD", subJenjang: "TK", naungan: "DISDIK", status: "NEGERI", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20351661", npsn: "20351661", nama: "TK AL-IRSYAD AL-ISLAMIYAH", jenjang: "PAUD", subJenjang: "TK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "69743498", npsn: "69743498", nama: "RA AT TAQWA", jenjang: "PAUD", subJenjang: "RA", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20351660", npsn: "20351660", nama: "TK HANG TUAH 16", jenjang: "PAUD", subJenjang: "TK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20351655", npsn: "20351655", nama: "TK PIUS", jenjang: "PAUD", subJenjang: "TK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "69960275", npsn: "69960275", nama: "KB GLOBAL INBYRA SCHOOL", jenjang: "PAUD", subJenjang: "KB", naungan: "DISDIK", status: "SWASTA", kelurahan: "Kemandungan", kelurahanId: "kemandungan", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "69960276", npsn: "69960276", nama: "TPA AISYIYAH KOTA TEGAL", jenjang: "PAUD", subJenjang: "TPA", naungan: "DISDIK", status: "SWASTA", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "69960277", npsn: "69960277", nama: "POS PAUD MEKAR BERSAMA", jenjang: "PAUD", subJenjang: "Pos PAUD", naungan: "DISDIK", status: "SWASTA", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "69960278", npsn: "69960278", nama: "PAUD TPQ NURUL FALAH", jenjang: "PAUD", subJenjang: "PAUD TPQ", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Debong Lor", kelurahanId: "debong-lor", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+
+  // SD
+  { id: "20329798", npsn: "20329798", nama: "SD NEGERI PEKAUMAN 1", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329914", npsn: "20329914", nama: "SD AL-IRSYAD KOTA TEGAL", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "SWASTA", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329911", npsn: "20329911", nama: "SD IHSANIYAH GAJAHMADA", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "SWASTA", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329968", npsn: "20329968", nama: "SD NEGERI KRATON 1", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329876", npsn: "20329876", nama: "SD PIUS TEGAL", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "SWASTA", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329770", npsn: "20329770", nama: "SD NEGERI TEGALSARI 1", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "60713972", npsn: "60713972", nama: "MIS MIFTAHUL ULUM TEGALSARI", jenjang: "SD", subJenjang: "MI", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329891", npsn: "20329891", nama: "SD NEGERI DEBONG LOR", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Debong Lor", kelurahanId: "debong-lor", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329948", npsn: "20329948", nama: "SD NEGERI KEMANDUNGAN 1", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Kemandungan", kelurahanId: "kemandungan", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329938", npsn: "20329938", nama: "SD NEGERI MUARAREJA 1", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Muarareja", kelurahanId: "muarareja", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+
+  // SMP
+  { id: "20329853", npsn: "20329853", nama: "SMP ALIRSYAD", jenjang: "SMP", subJenjang: "SMP", naungan: "DISDIK", status: "SWASTA", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "60727455", npsn: "60727455", nama: "MTSS MODEL IHSANIYAH", jenjang: "SMP", subJenjang: "MTs", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329819", npsn: "20329819", nama: "SMP PIUS", jenjang: "SMP", subJenjang: "SMP", naungan: "DISDIK", status: "SWASTA", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329825", npsn: "20329825", nama: "SMP NEGERI 13", jenjang: "SMP", subJenjang: "SMP", naungan: "DISDIK", status: "NEGERI", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329832", npsn: "20329832", nama: "SMP NEGERI 3 TEGAL", jenjang: "SMP", subJenjang: "SMP", naungan: "DISDIK", status: "NEGERI", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329829", npsn: "20329829", nama: "SMP NEGERI 6 TEGAL", jenjang: "SMP", subJenjang: "SMP", naungan: "DISDIK", status: "NEGERI", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+
+  // SMA/SMK
+  { id: "20329846", npsn: "20329846", nama: "SMA NEGERI 2 TEGAL", jenjang: "SMA_SMK", subJenjang: "SMA", naungan: "DISDIK", status: "NEGERI", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329772", npsn: "20329772", nama: "SMAS AL IRSYAD TEGAL", jenjang: "SMA_SMK", subJenjang: "SMA", naungan: "DISDIK", status: "SWASTA", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329784", npsn: "20329784", nama: "SMAS IHSANIYAH TEGAL", jenjang: "SMA_SMK", subJenjang: "SMA", naungan: "DISDIK", status: "SWASTA", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329848", npsn: "20329848", nama: "SMAS PIUS TEGAL", jenjang: "SMA_SMK", subJenjang: "SMA", naungan: "DISDIK", status: "SWASTA", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329856", npsn: "20329856", nama: "SMK NEGERI 1 TEGAL", jenjang: "SMA_SMK", subJenjang: "SMK", naungan: "DISDIK", status: "NEGERI", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20329858", npsn: "20329858", nama: "SMK NEGERI 3 TEGAL", jenjang: "SMA_SMK", subJenjang: "SMK", naungan: "DISDIK", status: "NEGERI", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "20341454", npsn: "20341454", nama: "SMK ASTRINDO KOTA TEGAL", jenjang: "SMA_SMK", subJenjang: "SMK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Pesurungan Kidul", kelurahanId: "pesurungan-kidul", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+
+  // KESETARAAN
+  { id: "p9959947", npsn: "P9959947", nama: "PKBM BINA HARAPAN (Paket A, B, C)", jenjang: "KESETARAAN", subJenjang: "PKBM", naungan: "DISDIK", status: "SWASTA", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "p9908267", npsn: "P9908267", nama: "PKBM BUDI LUHUR (Paket B & C)", jenjang: "KESETARAAN", subJenjang: "Paket C", naungan: "DISDIK", status: "SWASTA", kelurahan: "Pekauman", kelurahanId: "pekauman", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "p9908268", npsn: "P9908268", nama: "PKBM MAJU BERSAMA (Paket B)", jenjang: "KESETARAAN", subJenjang: "Paket B", naungan: "DISDIK", status: "SWASTA", kelurahan: "Tegalsari", kelurahanId: "tegalsari", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+  { id: "p9959977", npsn: "P9959977", nama: "UPTD SPNF SKB KOTA TEGAL (Paket A, B, C)", jenjang: "KESETARAAN", subJenjang: "SKB", naungan: "DISDIK", status: "NEGERI", kelurahan: "Kraton", kelurahanId: "kraton", kecamatan: "Tegal Barat", kecamatanId: "tegal-barat" },
+
+  // --- TEGAL TIMUR ---
+  // PAUD
+  { id: "20359984", npsn: "20359984", nama: "TK AISYIYAH BUSTANUL ATHFAL I", jenjang: "PAUD", subJenjang: "TK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Mangkukusuman", kelurahanId: "mangkukusuman", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20351677", npsn: "20351677", nama: "TK NEGERI PEMBINA TEGAL TIMUR", jenjang: "PAUD", subJenjang: "TK", naungan: "DISDIK", status: "NEGERI", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "69884926", npsn: "69884926", nama: "RA SAKILA KERTI", jenjang: "PAUD", subJenjang: "RA", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "69977271", npsn: "69977271", nama: "RA USAMAH 2", jenjang: "PAUD", subJenjang: "RA", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "69818059", npsn: "69818059", nama: "KB AISYIYAH KEJAMBON", jenjang: "PAUD", subJenjang: "KB", naungan: "DISDIK", status: "SWASTA", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+
+  // SD
+  { id: "20329958", npsn: "20329958", nama: "SD NEGERI KEJAMBON 1", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329912", npsn: "20329912", nama: "SD IHSANIYAH 1 TEGAL", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "SWASTA", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329962", npsn: "20329962", nama: "SD NEGERI MANGKUKUSUMAN 1", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Mangkukusuman", kelurahanId: "mangkukusuman", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329796", npsn: "20329796", nama: "SD NEGERI PANGGUNG 2", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329909", npsn: "20329909", nama: "SD IT USAMAH", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "SWASTA", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329934", npsn: "20329934", nama: "SD NEGERI MINTARAGEN 1", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Mintaragen", kelurahanId: "mintaragen", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329767", npsn: "20329767", nama: "SD NEGERI SLEROK 1", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+
+  // SMP
+  { id: "20329817", npsn: "20329817", nama: "SMP NEGERI 1", jenjang: "SMP", subJenjang: "SMP", naungan: "DISDIK", status: "NEGERI", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329833", npsn: "20329833", nama: "SMP NEGERI 2", jenjang: "SMP", subJenjang: "SMP", naungan: "DISDIK", status: "NEGERI", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329831", npsn: "20329831", nama: "SMP NEGERI 4", jenjang: "SMP", subJenjang: "SMP", naungan: "DISDIK", status: "NEGERI", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329816", npsn: "20329816", nama: "SMP NEGERI 10", jenjang: "SMP", subJenjang: "SMP", naungan: "DISDIK", status: "NEGERI", kelurahan: "Mangkukusuman", kelurahanId: "mangkukusuman", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329824", npsn: "20329824", nama: "SMP IHSANIYAH", jenjang: "SMP", subJenjang: "SMP", naungan: "DISDIK", status: "SWASTA", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+
+  // SMA/SMK
+  { id: "20329847", npsn: "20329847", nama: "SMA NEGERI 1 TEGAL", jenjang: "SMA_SMK", subJenjang: "SMA", naungan: "DISDIK", status: "NEGERI", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329845", npsn: "20329845", nama: "SMA NEGERI 3 TEGAL", jenjang: "SMA_SMK", subJenjang: "SMA", naungan: "DISDIK", status: "NEGERI", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329844", npsn: "20329844", nama: "SMA NEGERI 4 TEGAL", jenjang: "SMA_SMK", subJenjang: "SMA", naungan: "DISDIK", status: "NEGERI", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329812", npsn: "20329812", nama: "SMAS MUHAMMADIYAH", jenjang: "SMA_SMK", subJenjang: "SMA", naungan: "DISDIK", status: "SWASTA", kelurahan: "Mangkukusuman", kelurahanId: "mangkukusuman", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329841", npsn: "20329841", nama: "SMK NEGERI 2 TEGAL", jenjang: "SMA_SMK", subJenjang: "SMK", naungan: "DISDIK", status: "NEGERI", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20362559", npsn: "20362559", nama: "SMK IHSANIYAH TEGAL", jenjang: "SMA_SMK", subJenjang: "SMK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+
+  // SLB
+  { id: "20329773", npsn: "20329773", nama: "SLB NEGERI KOTA TEGAL (SD, SMP, SMA)", jenjang: "SLB", subJenjang: "SLB SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329774", npsn: "20329774", nama: "SLB NEGERI KOTA TEGAL SMPLB", jenjang: "SLB", subJenjang: "SLB SMP", naungan: "DISDIK", status: "NEGERI", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "20329775", npsn: "20329775", nama: "SLB NEGERI KOTA TEGAL SMALB", jenjang: "SLB", subJenjang: "SLB SMA", naungan: "DISDIK", status: "NEGERI", kelurahan: "Kejambon", kelurahanId: "kejambon", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+
+  // KESETARAAN
+  { id: "p9959971", npsn: "P9959971", nama: "PKBM CITRA MANDIRI (Paket A, B, C)", jenjang: "KESETARAAN", subJenjang: "PKBM", naungan: "DISDIK", status: "SWASTA", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "p9970024", npsn: "P9970024", nama: "PKBM SAKILA KERTI (Paket A & B)", jenjang: "KESETARAAN", subJenjang: "Paket A", naungan: "DISDIK", status: "SWASTA", kelurahan: "Panggung", kelurahanId: "panggung", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "p2970158", npsn: "P2970158", nama: "PKBM SARANA MAJU (Paket C)", jenjang: "KESETARAAN", subJenjang: "Paket C", naungan: "DISDIK", status: "SWASTA", kelurahan: "Slerok", kelurahanId: "slerok", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+  { id: "p9962931", npsn: "P9962931", nama: "PKBM STAR OF TOMORROW", jenjang: "KESETARAAN", subJenjang: "PKBM", naungan: "DISDIK", status: "SWASTA", kelurahan: "Mangkukusuman", kelurahanId: "mangkukusuman", kecamatan: "Tegal Timur", kecamatanId: "tegal-timur" },
+
+  // --- TEGAL SELATAN ---
+  // PAUD
+  { id: "69966113", npsn: "69966113", nama: "TK NEGERI PEMBINA TEGAL SELATAN", jenjang: "PAUD", subJenjang: "TK", naungan: "DISDIK", status: "NEGERI", kelurahan: "Keturen", kelurahanId: "keturen", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "69958134", npsn: "69958134", nama: "RA HIDAYATUL MUBTADIIEN", jenjang: "PAUD", subJenjang: "RA", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "20350569", npsn: "20350569", nama: "TK AISYIYAH BUSTANUL ATHFAL II", jenjang: "PAUD", subJenjang: "TK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "69818068", npsn: "69818068", nama: "KB BIAS ASSALAM", jenjang: "PAUD", subJenjang: "KB", naungan: "DISDIK", status: "SWASTA", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  // SD
+  { id: "60713973", npsn: "60713973", nama: "MIS ASSALAFIYAH", jenjang: "SD", subJenjang: "MI", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "60713974", npsn: "60713974", nama: "MIS DARUNNAJAH", jenjang: "SD", subJenjang: "MI", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Debong Kulon", kelurahanId: "debong-kulon", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "60713975", npsn: "60713975", nama: "MIS IHSANIYAH 01", jenjang: "SD", subJenjang: "MI", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Debong Tengah", kelurahanId: "debong-tengah", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "60713979", npsn: "60713979", nama: "MIS NURUL HUDA 01", jenjang: "SD", subJenjang: "MI", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Keturen", kelurahanId: "keturen", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "60713977", npsn: "60713977", nama: "MIS MAMBAUL ULUM", jenjang: "SD", subJenjang: "MI", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Bandung", kelurahanId: "bandung", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "20329867", npsn: "20329867", nama: "SD NEGERI RANDUGUNTING", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  // SMP
+  { id: "20364867", npsn: "20364867", nama: "MTSS ASSALAFIYAH", jenjang: "SMP", subJenjang: "MTs", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "20364868", npsn: "20364868", nama: "MTSS MAMBAUL ULUM", jenjang: "SMP", subJenjang: "MTs", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Tunon", kelurahanId: "tunon", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  // SMA/SMK
+  { id: "70054237", npsn: "70054237", nama: "SMA NEGERI 6 TEGAL", jenjang: "SMA_SMK", subJenjang: "SMA", naungan: "DISDIK", status: "NEGERI", kelurahan: "Kalinyamat Wetan", kelurahanId: "kalinyamat-wetan", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "20360818", npsn: "20360818", nama: "SMK AL-IRSYAD TEGAL", jenjang: "SMA_SMK", subJenjang: "SMK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "20354541", npsn: "20354541", nama: "SMK ASSALAFIYAH KOTA TEGAL", jenjang: "SMA_SMK", subJenjang: "SMK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Keturen", kelurahanId: "keturen", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "20329861", npsn: "20329861", nama: "SMK DINAMIKA KOTA TEGAL", jenjang: "SMA_SMK", subJenjang: "SMK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+  { id: "20341469", npsn: "20341469", nama: "SMK AL IKHLASH KOTA TEGAL", jenjang: "SMA_SMK", subJenjang: "SMK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Randugunting", kelurahanId: "randugunting", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  // SLB
+  { id: "69946325", npsn: "69946325", nama: "SLB SPK MUHAMMADIYAH", jenjang: "SLB", subJenjang: "SLB SD", naungan: "DISDIK", status: "SWASTA", kelurahan: "Debong Tengah", kelurahanId: "debong-tengah", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  // KESETARAAN
+  { id: "p9962828", npsn: "P9962828", nama: "PKBM ARUM INDAH (Paket A & B)", jenjang: "KESETARAAN", subJenjang: "Paket B", naungan: "DISDIK", status: "SWASTA", kelurahan: "Debong Kidul", kelurahanId: "debong-kidul", kecamatan: "Tegal Selatan", kecamatanId: "tegal-selatan" },
+
+  // --- MARGADANA ---
+  // PAUD
+  { id: "20351684", npsn: "20351684", nama: "TK NEGERI PEMBINA KECAMATAN MARGADANA", jenjang: "PAUD", subJenjang: "TK", naungan: "DISDIK", status: "NEGERI", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "69977270", npsn: "69977270", nama: "RA AL FURQON", jenjang: "PAUD", subJenjang: "RA", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "69743496", npsn: "69743496", nama: "RA AL-IZZAH", jenjang: "PAUD", subJenjang: "RA", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Kaligangsa", kelurahanId: "kaligangsa", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "69818077", npsn: "69818077", nama: "KB INSAN CERDAS", jenjang: "PAUD", subJenjang: "KB", naungan: "DISDIK", status: "SWASTA", kelurahan: "Sumurpanggang", kelurahanId: "sumurpanggang", kecamatan: "Margadana", kecamatanId: "margadana" },
+
+  // SD
+  { id: "20329866", npsn: "20329866", nama: "SD NEGERI CABAWAN 2 TEGAL", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Cabawan", kelurahanId: "cabawan", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "20329883", npsn: "20329883", nama: "SD NEGERI KALIGANGSA 04", jenjang: "SD", subJenjang: "SD", naungan: "DISDIK", status: "NEGERI", kelurahan: "Kaligangsa", kelurahanId: "kaligangsa", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "69752199", npsn: "69752199", nama: "MI AR-RIDHO", jenjang: "SD", subJenjang: "MI", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "60713970", npsn: "60713970", nama: "MIS AR - RAHMAN", jenjang: "SD", subJenjang: "MI", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Sumurpanggang", kelurahanId: "sumurpanggang", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "60713968", npsn: "60713968", nama: "MIS NURUL HIKMAH", jenjang: "SD", subJenjang: "MI", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Krandon", kelurahanId: "krandon", kecamatan: "Margadana", kecamatanId: "margadana" },
+
+  // SMP
+  { id: "20364865", npsn: "20364865", nama: "MTSN KOTA TEGAL", jenjang: "SMP", subJenjang: "MTs", naungan: "KEMENAG", status: "NEGERI", kelurahan: "Pesurungan Lor", kelurahanId: "pesurungan-lor", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "20364866", npsn: "20364866", nama: "MTSS RAUDHATUL ULUM", jenjang: "SMP", subJenjang: "MTs", naungan: "KEMENAG", status: "SWASTA", kelurahan: "Kaligangsa", kelurahanId: "kaligangsa", kecamatan: "Margadana", kecamatanId: "margadana" },
+
+  // SMA/SMK
+  { id: "20363066", npsn: "20363066", nama: "MAN TEGAL", jenjang: "SMA_SMK", subJenjang: "MA", naungan: "KEMENAG", status: "NEGERI", kelurahan: "Pesurungan Lor", kelurahanId: "pesurungan-lor", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "20329843", npsn: "20329843", nama: "SMA NEGERI 5 TEGAL", jenjang: "SMA_SMK", subJenjang: "SMA", naungan: "DISDIK", status: "NEGERI", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "20360538", npsn: "20360538", nama: "SMK HARKAT NEGERI KOTA TEGAL", jenjang: "SMA_SMK", subJenjang: "SMK", naungan: "DISDIK", status: "NEGERI", kelurahan: "Margadana", kelurahanId: "margadana-kel", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "20329860", npsn: "20329860", nama: "SMK ISTEK KALIGANGSA", jenjang: "SMA_SMK", subJenjang: "SMK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Kaligangsa", kelurahanId: "kaligangsa", kecamatan: "Margadana", kecamatanId: "margadana" },
+  { id: "20329842", npsn: "20329842", nama: "SMK MUHAMMADIYAH 2 TEGAL", jenjang: "SMA_SMK", subJenjang: "SMK", naungan: "DISDIK", status: "SWASTA", kelurahan: "Kaligangsa", kelurahanId: "kaligangsa", kecamatan: "Margadana", kecamatanId: "margadana" },
+
+  // KESETARAAN
+  { id: "p9959949", npsn: "P9959949", nama: "PKBM KI HAJAR DEWANTARA (Paket A, B, C)", jenjang: "KESETARAAN", subJenjang: "PKBM", naungan: "DISDIK", status: "SWASTA", kelurahan: "Sumurpanggang", kelurahanId: "sumurpanggang", kecamatan: "Margadana", kecamatanId: "margadana" },
+];
+
+// ==============================================================================
+// 4. DATA MASTER ORGANISASI PERANGKAT DAERAH (OPD) KOTA TEGAL
+// ==============================================================================
+export interface MasterOpdItem {
+  id: string;
+  kode: string;
+  nama: string;
+  deskripsi: string;
+  sektor: string;
+}
+
+export const MASTER_OPD_TEGAL: MasterOpdItem[] = [
   {
     id: "opd-dinkes",
     kode: "DINKES",
     nama: "Dinas Kesehatan Kota Tegal",
-    deskripsi: "Imunisasi, Penanganan Stunting, Sanitasi & Layanan Puskesmas",
+    deskripsi: "Pusat Koordinasi Posyandu, Puskesmas, Imunisasi & Penanganan Stunting",
     sektor: "Kesehatan & Gizi",
   },
   {
     id: "opd-disdikbud",
     kode: "DISDIKBUD",
-    nama: "Dinas Pendidikan dan Kebudayaan Kota Tegal",
-    deskripsi: "PPDB, Bantuan Pendidikan, Beasiswa, PAUD, SD & SMP",
-    sektor: "Pendidikan",
+    nama: "Dinas Pendidikan dan Kebudayaan",
+    deskripsi: "Kebijakan PAUD, SD, SMP, Beasiswa Siswa & Kurikulum Sekolah",
+    sektor: "Pendidikan & Kebudayaan",
   },
   {
     id: "opd-dinsos",
     kode: "DINSOS",
     nama: "Dinas Sosial Kota Tegal",
-    deskripsi: "Bantuan Sosial (PKH, BPNT, DTKS), Lansia & Disabilitas",
+    deskripsi: "Penyaluran PKH, BPNT, DTKS, Bantuan Disabilitas & Lansia",
     sektor: "Sosial & Bantuan",
   },
   {
     id: "opd-disdukcapil",
     kode: "DISDUKCAPIL",
     nama: "Dinas Kependudukan dan Pencatatan Sipil",
-    deskripsi: "Akta Kelahiran, KIA, KTP Digital, Kartu Keluarga & Adminduk",
+    deskripsi: "Layanan KTP Digital, Kartu Keluarga, Akta Kelahiran & KIA",
     sektor: "Kependudukan",
   },
   {
     id: "opd-dp3ap2kb",
     kode: "DP3AP2KB",
-    nama: "DP3AP2KB Kota Tegal",
-    deskripsi: "Perlindungan Anak, Pemberdayaan Perempuan & Pembinaan Posyandu",
-    sektor: "Perlindungan Anak & KB",
-  },
-  {
-    id: "opd-dinkopumkm",
-    kode: "DINKOPUMKMPERINDAG",
-    nama: "Dinas Koperasi, UKM dan Perdagangan",
-    deskripsi: "Pemberdayaan UMKM, Pasar Tradisional & Stabilitas Pangan",
-    sektor: "Ekonomi & Usaha Warga",
-  },
-  {
-    id: "opd-dlh",
-    kode: "DLH",
-    nama: "Dinas Lingkungan Hidup Kota Tegal",
-    deskripsi: "Pengelolaan Sampah, Bank Sampah Lingkungan & Kebersihan Kota",
-    sektor: "Lingkungan Hidup",
-  },
-  {
-    id: "opd-bpbd",
-    kode: "BPBD",
-    nama: "Badan Penanggulangan Bencana Daerah (BPBD)",
-    deskripsi: "Mitigasi Banjir Rob, Siaga Bencana & Tanggap Darurat",
-    sektor: "Kebencanaan & Siaga",
-  },
-  {
-    id: "opd-satpolpp",
-    kode: "SATPOL PP",
-    nama: "Satuan Polisi Pamong Praja Kota Tegal",
-    deskripsi: "Ketertiban Umum, Penegakan Perda & Perlindungan Warga",
-    sektor: "Ketertiban & Linmas",
+    nama: "Dinas P3AP2KB Kota Tegal",
+    deskripsi: "Pemberdayaan Perempuan, Perlindungan Anak, PLKB & Keluarga Berencana",
+    sektor: "Keluarga & Anak",
   },
   {
     id: "opd-diskominfo",
     kode: "DISKOMINFO",
     nama: "Dinas Komunikasi dan Informatika",
-    deskripsi: "Kanal Pengaduan Publik, Transformasi Digital & Smart City",
-    sektor: "Layanan Digital & Aduan",
+    deskripsi: "Layanan Pengaduan Warga, Satu Data Kota Tegal & Portal Informasi Publik",
+    sektor: "Komunikasi & TI",
+  },
+  {
+    id: "opd-dinkopukm",
+    kode: "DINKOPUKM",
+    nama: "Dinas Koperasi, UKM dan Perdagangan",
+    deskripsi: "Bantuan Modal UMKM, Sertifikasi Halal, Pasar Murah & Pelatihan Usaha",
+    sektor: "Ekonomi & UMKM",
+  },
+  {
+    id: "opd-bpbd",
+    kode: "BPBD",
+    nama: "Badan Penanggulangan Bencana Daerah",
+    deskripsi: "Pencegahan Banjir Rob, Tanggap Darurat Kebakaran & Cuaca Ekstrem",
+    sektor: "Kebencanaan & SAR",
+  },
+  {
+    id: "opd-bappeda",
+    kode: "BAPPEDA",
+    nama: "Badan Perencanaan Pembangunan Daerah",
+    deskripsi: "Musrenbang Warga, Riset Daerah & Evaluasi Program Pembangunan",
+    sektor: "Perencanaan Kota",
+  },
+  {
+    id: "opd-satpolpp",
+    kode: "SATPOL PP",
+    nama: "Satuan Polisi Pamong Praja",
+    deskripsi: "Penegakan Peraturan Daerah, Ketertiban Umum & Perlindungan Masyarakat",
+    sektor: "Ketertiban Umum",
   },
   {
     id: "opd-disnakerin",
     kode: "DISNAKERIN",
     nama: "Dinas Tenaga Kerja dan Perindustrian",
-    deskripsi: "Bursa Kerja, Pelatihan Vokasi Warga & Sertifikasi Keahlian",
+    deskripsi: "Bursa Kerja (Job Fair), Pelatihan BLK & Hubungan Industrial",
     sektor: "Ketenagakerjaan",
+  },
+  {
+    id: "opd-disporapar",
+    kode: "DISPORAPAR",
+    nama: "Dinas Pemuda, Olahraga dan Pariwisata",
+    deskripsi: "Pengembangan Pariwisata Bahari, Fasilitas Olahraga & Kepemudaan",
+    sektor: "Pariwisata & Olahraga",
   },
 ];
 
-// ==============================================================================
-// 3. MASTER SATUAN PENDIDIKAN (PAUD/TK/SD/SMP/SMA/SMK) KOTA TEGAL
-// ==============================================================================
-export const MASTER_ALL_SEKOLAH_TEGAL = [
-  // PAUD & TK
-  { id: "tk-pertiwi-mintaragen", nama: "TK Pertiwi Mintaragen", tingkat: "TK", kelurahan: "Mintaragen", kecamatan: "Tegal Timur" },
-  { id: "tk-kemala-panggung", nama: "TK Kemala Bhayangkari Tegal", tingkat: "TK", kelurahan: "Panggung", kecamatan: "Tegal Timur" },
-  { id: "tk-aba-mangkukusuman", nama: "TK Aisyiyah Bustanul Athfal 1", tingkat: "TK", kelurahan: "Mangkukusuman", kecamatan: "Tegal Timur" },
-  { id: "ra-al-hidayah-kejambon", nama: "RA Al-Hidayah Kejambon", tingkat: "RA", kelurahan: "Kejambon", kecamatan: "Tegal Timur" },
-  { id: "paud-melati-slerok", nama: "PAUD Melati Slerok", tingkat: "PAUD", kelurahan: "Slerok", kecamatan: "Tegal Timur" },
-  { id: "tk-bahari-tegalsari", nama: "TK Bahari Mandiri", tingkat: "TK", kelurahan: "Tegalsari", kecamatan: "Tegal Barat" },
-  { id: "tk-aba-kraton", nama: "TK ABA Kraton", tingkat: "TK", kelurahan: "Kraton", kecamatan: "Tegal Barat" },
-  { id: "paud-ceria-kemandungan", nama: "PAUD Ceria Kemandungan", tingkat: "PAUD", kelurahan: "Kemandungan", kecamatan: "Tegal Barat" },
-  { id: "tk-muslimat-pekauman", nama: "TK Muslimat Pekauman", tingkat: "TK", kelurahan: "Pekauman", kecamatan: "Tegal Barat" },
-  { id: "paud-kasih-randugunting", nama: "PAUD Kasih Bunda Randugunting", tingkat: "PAUD", kelurahan: "Randugunting", kecamatan: "Tegal Selatan" },
-  { id: "tk-aisyiyah-debongtengah", nama: "TK Aisyiyah Debong Tengah", tingkat: "TK", kelurahan: "Debong Tengah", kecamatan: "Tegal Selatan" },
-  { id: "tk-pertiwi-tunon", nama: "TK Pertiwi Tunon", tingkat: "TK", kelurahan: "Tunon", kecamatan: "Tegal Selatan" },
-  { id: "paud-tunas-bandung", nama: "PAUD Tunas Harapan Bandung", tingkat: "PAUD", kelurahan: "Bandung", kecamatan: "Tegal Selatan" },
-  { id: "tk-pertiwi-margadana", nama: "TK Pertiwi Margadana", tingkat: "TK", kelurahan: "Margadana", kecamatan: "Margadana" },
-  { id: "tk-diponegoro-kaligangsa", nama: "TK Diponegoro Kaligangsa", tingkat: "TK", kelurahan: "Kaligangsa", kecamatan: "Margadana" },
-  { id: "tk-kemala-sumurpanggang", nama: "TK Kemala Sumurpanggang", tingkat: "TK", kelurahan: "Sumurpanggang", kecamatan: "Margadana" },
-
-  // SD (Sekolah Dasar)
-  { id: "sd-mintaragen-1", nama: "SD Negeri Mintaragen 1", tingkat: "SD", kelurahan: "Mintaragen", kecamatan: "Tegal Timur" },
-  { id: "sd-mintaragen-3", nama: "SD Negeri Mintaragen 3", tingkat: "SD", kelurahan: "Mintaragen", kecamatan: "Tegal Timur" },
-  { id: "sd-panggung-3", nama: "SD Negeri Panggung 3", tingkat: "SD", kelurahan: "Panggung", kecamatan: "Tegal Timur" },
-  { id: "sd-panggung-5", nama: "SD Negeri Panggung 5", tingkat: "SD", kelurahan: "Panggung", kecamatan: "Tegal Timur" },
-  { id: "sd-mangkukusuman-1", nama: "SD Negeri Mangkukusuman 1", tingkat: "SD", kelurahan: "Mangkukusuman", kecamatan: "Tegal Timur" },
-  { id: "sd-kejambon-1", nama: "SD Negeri Kejambon 1", tingkat: "SD", kelurahan: "Kejambon", kecamatan: "Tegal Timur" },
-  { id: "sd-kejambon-2", nama: "SD Negeri Kejambon 2", tingkat: "SD", kelurahan: "Kejambon", kecamatan: "Tegal Timur" },
-  { id: "sd-slerok-2", nama: "SD Negeri Slerok 2", tingkat: "SD", kelurahan: "Slerok", kecamatan: "Tegal Timur" },
-  { id: "sd-slerok-4", nama: "SD Negeri Slerok 4", tingkat: "SD", kelurahan: "Slerok", kecamatan: "Tegal Timur" },
-  { id: "sd-tegalsari-1", nama: "SD Negeri Tegalsari 1", tingkat: "SD", kelurahan: "Tegalsari", kecamatan: "Tegal Barat" },
-  { id: "sd-kraton-1", nama: "SD Negeri Kraton 1", tingkat: "SD", kelurahan: "Kraton", kecamatan: "Tegal Barat" },
-  { id: "sd-kraton-3", nama: "SD Negeri Kraton 3", tingkat: "SD", kelurahan: "Kraton", kecamatan: "Tegal Barat" },
-  { id: "sd-kemandungan-1", nama: "SD Negeri Kemandungan 1", tingkat: "SD", kelurahan: "Kemandungan", kecamatan: "Tegal Barat" },
-  { id: "sd-debong-lor-1", nama: "SD Negeri Debong Lor 1", tingkat: "SD", kelurahan: "Debong Lor", kecamatan: "Tegal Barat" },
-  { id: "sd-muarareja-1", nama: "SD Negeri Muarareja 1", tingkat: "SD", kelurahan: "Muarareja", kecamatan: "Tegal Barat" },
-  { id: "sd-pekauman-1", nama: "SD Negeri Pekauman 1", tingkat: "SD", kelurahan: "Pekauman", kecamatan: "Tegal Barat" },
-  { id: "sd-pesurungan-kidul-1", nama: "SD Negeri Pesurungan Kidul 1", tingkat: "SD", kelurahan: "Pesurungan Kidul", kecamatan: "Tegal Barat" },
-  { id: "sd-randugunting-1", nama: "SD Negeri Randugunting 1", tingkat: "SD", kelurahan: "Randugunting", kecamatan: "Tegal Selatan" },
-  { id: "sd-randugunting-6", nama: "SD Negeri Randugunting 6", tingkat: "SD", kelurahan: "Randugunting", kecamatan: "Tegal Selatan" },
-  { id: "sd-debong-kulon-1", nama: "SD Negeri Debong Kulon 1", tingkat: "SD", kelurahan: "Debong Kulon", kecamatan: "Tegal Selatan" },
-  { id: "sd-debong-tengah-1", nama: "SD Negeri Debong Tengah 1", tingkat: "SD", kelurahan: "Debong Tengah", kecamatan: "Tegal Selatan" },
-  { id: "sd-debong-kidul-1", nama: "SD Negeri Debong Kidul 1", tingkat: "SD", kelurahan: "Debong Kidul", kecamatan: "Tegal Selatan" },
-  { id: "sd-tunon-1", nama: "SD Negeri Tunon 1", tingkat: "SD", kelurahan: "Tunon", kecamatan: "Tegal Selatan" },
-  { id: "sd-kalinyamat-wetan-1", nama: "SD Negeri Kalinyamat Wetan 1", tingkat: "SD", kelurahan: "Kalinyamat Wetan", kecamatan: "Tegal Selatan" },
-  { id: "sd-keturen-1", nama: "SD Negeri Keturen 1", tingkat: "SD", kelurahan: "Keturen", kecamatan: "Tegal Selatan" },
-  { id: "sd-bandung-1", nama: "SD Negeri Bandung 1", tingkat: "SD", kelurahan: "Bandung", kecamatan: "Tegal Selatan" },
-  { id: "sd-margadana-1", nama: "SD Negeri Margadana 1", tingkat: "SD", kelurahan: "Margadana", kecamatan: "Margadana" },
-  { id: "sd-cabawan-1", nama: "SD Negeri Cabawan 1", tingkat: "SD", kelurahan: "Cabawan", kecamatan: "Margadana" },
-  { id: "sd-kaligangsa-1", nama: "SD Negeri Kaligangsa 1", tingkat: "SD", kelurahan: "Kaligangsa", kecamatan: "Margadana" },
-  { id: "sd-kalinyamat-kulon-1", nama: "SD Negeri Kalinyamat Kulon 1", tingkat: "SD", kelurahan: "Kalinyamat Kulon", kecamatan: "Margadana" },
-  { id: "sd-krandon-1", nama: "SD Negeri Krandon 1", tingkat: "SD", kelurahan: "Krandon", kecamatan: "Margadana" },
-  { id: "sd-pesurungan-lor-1", nama: "SD Negeri Pesurungan Lor 1", tingkat: "SD", kelurahan: "Pesurungan Lor", kecamatan: "Margadana" },
-  { id: "sd-sumurpanggang-1", nama: "SD Negeri Sumurpanggang 1", tingkat: "SD", kelurahan: "Sumurpanggang", kecamatan: "Margadana" },
-  { id: "sd-sumurpanggang-3", nama: "SD Negeri Sumurpanggang 3", tingkat: "SD", kelurahan: "Sumurpanggang", kecamatan: "Margadana" },
-
-  // SMP (Sekolah Menengah Pertama)
-  { id: "smp-1-tegal", nama: "SMP Negeri 1 Kota Tegal", tingkat: "SMP", kelurahan: "Mintaragen", kecamatan: "Tegal Timur" },
-  { id: "smp-2-tegal", nama: "SMP Negeri 2 Kota Tegal", tingkat: "SMP", kelurahan: "Kraton", kecamatan: "Tegal Barat" },
-  { id: "smp-3-tegal", nama: "SMP Negeri 3 Kota Tegal", tingkat: "SMP", kelurahan: "Mangkukusuman", kecamatan: "Tegal Timur" },
-  { id: "smp-5-tegal", nama: "SMP Negeri 5 Kota Tegal", tingkat: "SMP", kelurahan: "Randugunting", kecamatan: "Tegal Selatan" },
-  { id: "smp-6-tegal", nama: "SMP Negeri 6 Kota Tegal", tingkat: "SMP", kelurahan: "Panggung", kecamatan: "Tegal Timur" },
-  { id: "smp-7-tegal", nama: "SMP Negeri 7 Kota Tegal", tingkat: "SMP", kelurahan: "Tegalsari", kecamatan: "Tegal Barat" },
-  { id: "smp-8-tegal", nama: "SMP Negeri 8 Kota Tegal", tingkat: "SMP", kelurahan: "Kejambon", kecamatan: "Tegal Timur" },
-  { id: "smp-10-tegal", nama: "SMP Negeri 10 Kota Tegal", tingkat: "SMP", kelurahan: "Slerok", kecamatan: "Tegal Timur" },
-  { id: "smp-12-tegal", nama: "SMP Negeri 12 Kota Tegal", tingkat: "SMP", kelurahan: "Margadana", kecamatan: "Margadana" },
-  { id: "smp-13-tegal", nama: "SMP Negeri 13 Kota Tegal", tingkat: "SMP", kelurahan: "Muarareja", kecamatan: "Tegal Barat" },
-  { id: "smp-14-tegal", nama: "SMP Negeri 14 Kota Tegal", tingkat: "SMP", kelurahan: "Kalinyamat Wetan", kecamatan: "Tegal Selatan" },
-
-  // SMA & SMK
-  { id: "sma-1-tegal", nama: "SMA Negeri 1 Kota Tegal", tingkat: "SMA", kelurahan: "Mintaragen", kecamatan: "Tegal Timur" },
-  { id: "sma-4-tegal", nama: "SMA Negeri 4 Kota Tegal", tingkat: "SMA", kelurahan: "Sumurpanggang", kecamatan: "Margadana" },
-  { id: "smk-1-tegal", nama: "SMK Negeri 1 Kota Tegal", tingkat: "SMK", kelurahan: "Pesurungan Kidul", kecamatan: "Tegal Barat" },
+// Opsi Multi-Peran Posyandu
+export const PERAN_POSYANDU_OPTIONS = [
+  { id: "Tenaga Medis", label: "Tenaga Medis", badge: "Kesehatan", desc: "Bidan, Dokter Puskesmas, Perawat" },
+  { id: "PLKB", label: "PLKB", badge: "KB & P2KB", desc: "Petugas Lapangan Keluarga Berencana" },
+  { id: "Kader Posyandu", label: "Kader Posyandu", badge: "Kader", desc: "Pengurus & Kader Penimbang/Pencatat" },
+  { id: "Warga", label: "Warga", badge: "Masyarakat", desc: "Orang Tua Balita, Remaja, Lansia / Warga" },
 ];
 
+// Opsi Multi-Peran Sekolah
+export const PERAN_SEKOLAH_OPTIONS = [
+  { id: "Orang Tua / Wali Siswa", label: "Orang Tua / Wali Siswa", badge: "Wali Murid", desc: "Orang tua atau wali siswa terdaftar" },
+  { id: "Siswa", label: "Siswa", badge: "Pelajar", desc: "Pelajar aktif pada satuan pendidikan ini" },
+  { id: "Guru / Tenaga Kependidikan", label: "Guru / Tenaga Kependidikan", badge: "Pendidik", desc: "Tenaga pendidik, staf TU, & guru" },
+  { id: "Komite Sekolah", label: "Komite Sekolah", badge: "Komite", desc: "Perwakilan pengurus komite sekolah" },
+  { id: "Alumni / Warga", label: "Alumni / Warga", badge: "Alumni", desc: "Alumni, tokoh sekitar, atau simpatisan" },
+];
+
+// Opsi Multi-Peran OPD
+export const PERAN_OPD_OPTIONS = [
+  { id: "Aparatur / Staf OPD", label: "Aparatur / Staf OPD", badge: "Pegawai", desc: "ASN, Non-ASN, atau staf internal dinas" },
+  { id: "Kader Pendamping Program", label: "Kader Pendamping Program", badge: "Pendamping", desc: "Kader TPK, Pendamping PKH, Fasilitator" },
+  { id: "Warga Penerima Manfaat / Masyarakat Umum", label: "Warga Penerima Manfaat / Masyarakat Umum", badge: "Warga", desc: "Masyarakat umum, pemohon layanan, penerima program" },
+];
+
+// Opsi Dropdown Kategori Jenjang Satuan PAUD & PNF
+export const OPSI_JENJANG_SEKOLAH = [
+  { value: "semua", label: "Semua Satuan PAUD & PNF" },
+  { value: "TK", label: "TK (Taman Kanak-Kanak)" },
+  { value: "RA", label: "RA (Raudhatul Athfal)" },
+  { value: "KB", label: "KB (Kelompok Bermain)" },
+  { value: "POS_PAUD", label: "Pos PAUD / PAUD TPQ" },
+  { value: "TPA", label: "TPA (Tempat Penitipan Anak)" },
+  { value: "PKBM", label: "PKBM (Pendidikan Kesetaraan)" },
+  { value: "SKB", label: "SKB (Sanggar Kegiatan Belajar)" },
+];
+
+// ==============================================================================
+// 5. KOMPONEN UTAMA BERBASIS TABBED: CardKanalDiscovery
+// ==============================================================================
 export function CardKanalDiscovery() {
-  const supabase = createClient();
+  const router = useRouter();
   const queryClient = useQueryClient();
+  const supabase = createClient();
 
-  // Nuqs URL Filter State
-  const [filters, setFilters] = useQueryStates(
-    {
-      kecamatan: parseAsString.withDefault(""),
-      kelurahan: parseAsString.withDefault(""),
-      unit: parseAsString.withDefault(""),
-    },
-    {
-      shallow: false,
+  // Tab State: "posyandu" | "sekolah" | "opd"
+  const [activeTab, setActiveTab] = useState<string>("posyandu");
+
+  // --------------------------------------------------------------------------
+  // STATE TAB 1: KANAL POSYANDU
+  // --------------------------------------------------------------------------
+  const [kecamatanPosyandu, setKecamatanPosyandu] = useState<string>("semua");
+  const [kelurahanPosyandu, setKelurahanPosyandu] = useState<string>("semua");
+  const [searchPosyanduText, setSearchPosyanduText] = useState<string>("");
+  const [showPosyanduResults, setShowPosyanduResults] = useState<boolean>(false);
+
+  // --------------------------------------------------------------------------
+  // STATE TAB 2: KANAL SEKOLAH (Fokus Satuan PAUD & PNF se-Kota Tegal)
+  // --------------------------------------------------------------------------
+  const [searchSekolahText, setSearchSekolahText] = useState<string>("");
+  const [kecamatanSekolah, setKecamatanSekolah] = useState<string>("semua");
+  const [kelurahanSekolah, setKelurahanSekolah] = useState<string>("semua");
+  const [jenjangSekolah, setJenjangSekolah] = useState<string>("semua");
+
+  // --------------------------------------------------------------------------
+  // STATE TAB 3: KANAL OPD
+  // --------------------------------------------------------------------------
+  const [searchOpdText, setSearchOpdText] = useState<string>("");
+  const [showOpdResults, setShowOpdResults] = useState<boolean>(false);
+
+  // --------------------------------------------------------------------------
+  // MODAL GABUNG KANAL STATE
+  // --------------------------------------------------------------------------
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [modalData, setModalData] = useState<{
+    tipe: "POSYANDU" | "SEKOLAH" | "OPD";
+    id: string;
+    nama: string;
+    detail: string;
+    kelurahan?: string;
+    kecamatan?: string;
+    jenjang?: string;
+  } | null>(null);
+
+  const [selectedPeran, setSelectedPeran] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Ambil data kelurahan untuk dropdown Posyandu
+  const availableKelurahanList = useMemo(() => {
+    if (!kecamatanPosyandu || kecamatanPosyandu === "semua") {
+      return Object.values(FALLBACK_KELURAHAN).flat();
     }
-  );
+    return FALLBACK_KELURAHAN[kecamatanPosyandu] || [];
+  }, [kecamatanPosyandu]);
 
-  // 3 Modal Dialog States
-  const [isPosyanduModalOpen, setIsPosyanduModalOpen] = useState(false);
-  const [isSekolahModalOpen, setIsSekolahModalOpen] = useState(false);
-  const [isOpdModalOpen, setIsOpdModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Reset kelurahan jika kecamatan posyandu berganti
+  const handleKecamatanPosyanduChange = (val: string | null) => {
+    setKecamatanPosyandu(val || "semua");
+    setKelurahanPosyandu("semua");
+  };
 
-  // Form States for Modal 1: Posyandu
-  const [posyanduForm, setPosyanduForm] = useState({
-    kelurahanId: "",
-    posyanduId: "",
-    peran: "Ibu Balita / Orang Tua",
-  });
+  // Ambil data kelurahan untuk dropdown Sekolah (PAUD & PNF)
+  const availableKelurahanSekolahList = useMemo(() => {
+    if (!kecamatanSekolah || kecamatanSekolah === "semua") {
+      return Object.values(FALLBACK_KELURAHAN).flat();
+    }
+    return FALLBACK_KELURAHAN[kecamatanSekolah] || [];
+  }, [kecamatanSekolah]);
 
-  // Form States for Modal 2: Sekolah
-  const [sekolahForm, setSekolahForm] = useState({
-    jenjangFilter: "SEMUA",
-    sekolahId: "",
-    peran: "Orang Tua / Wali Siswa",
-  });
+  // Reset kelurahan jika kecamatan sekolah berganti
+  const handleKecamatanSekolahChange = (val: string | null) => {
+    setKecamatanSekolah(val || "semua");
+    setKelurahanSekolah("semua");
+  };
 
-  // Form States for Modal 3: OPD
-  const [opdForm, setOpdForm] = useState({
-    opdId: "",
-    peran: "Warga Penerima Layanan",
-  });
+  // Posyandu Filtered Results
+  const filteredPosyanduList = useMemo(() => {
+    return ALL_MASTER_POSYANDU_TEGAL.filter((p) => {
+      // Filter Kecamatan
+      if (kecamatanPosyandu !== "semua" && p.kecamatanId !== kecamatanPosyandu) {
+        return false;
+      }
+      // Filter Kelurahan
+      if (kelurahanPosyandu !== "semua" && p.kelurahanId !== kelurahanPosyandu) {
+        return false;
+      }
+      // Filter Search
+      if (searchPosyanduText.trim()) {
+        const query = searchPosyanduText.toLowerCase();
+        const matchNama = p.nama.toLowerCase().includes(query);
+        const matchKel = p.kelurahan.toLowerCase().includes(query);
+        const matchKec = p.kecamatan.toLowerCase().includes(query);
+        if (!matchNama && !matchKel && !matchKec) return false;
+      }
+      return true;
+    });
+  }, [kecamatanPosyandu, kelurahanPosyandu, searchPosyanduText]);
 
-  // 1. Ambil Profil Pengguna Aktif (untuk mendeteksi Kelurahan Domisili otomatis)
-  const { data: userProfile } = useQuery({
-    queryKey: ["current-user-kanal-profile"],
+  // --------------------------------------------------------------------------
+  // Kueri Supabase Realtime untuk Seluruh Data Satuan PAUD & PNF
+  // --------------------------------------------------------------------------
+  const {
+    data: dbSekolahList,
+    isLoading: isLoadingSekolah,
+    error: dbSekolahError,
+  } = useQuery({
+    queryKey: ["kanal_sekolah_full_list"],
     queryFn: async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return null;
-
       try {
-        const { data } = await supabase
-          .from("users")
-          .select("id, email, username, nama_lengkap, domisili_kelurahan_id, kk_kelurahan_id")
-          .eq("id", user.id)
-          .maybeSingle();
+        // Ambil data sekolah dan wilayah secara paralel untuk resolusi nama wilayah 100% presisi
+        const [sekolahRes, wilayahRes] = await Promise.all([
+          supabase
+            .from("kanal_sekolah")
+            .select("id, npsn, nama, nama_sekolah, jenjang, tingkat, alamat, kelurahan_id, kecamatan_id")
+            .order("nama", { ascending: true })
+            .limit(1000),
+          supabase
+            .from("wilayah")
+            .select("id, nama, parent_id")
+        ]);
 
-        return {
-          authId: user.id,
-          id: data?.id,
-          email: data?.email,
-          username: data?.username,
-          nama_lengkap: data?.nama_lengkap,
-          domisili_kelurahan_id: (data?.domisili_kelurahan_id as string | null) || null,
-          kk_kelurahan_id: (data?.kk_kelurahan_id as string | null) || null,
-        };
-      } catch {
-        return {
-          authId: user.id,
-          id: undefined,
-          email: undefined,
-          username: undefined,
-          nama_lengkap: undefined,
-          domisili_kelurahan_id: null,
-          kk_kelurahan_id: null,
-        };
+        const data = sekolahRes.data;
+        const wilayahList = wilayahRes.data || [];
+
+        // Buat map wilayah
+        const wilayahMap = new Map<string, { id: string; nama: string; parentId?: string }>();
+        wilayahList.forEach((w: any) => {
+          wilayahMap.set(w.id, { id: w.id, nama: w.nama, parentId: w.parent_id });
+        });
+
+        if (sekolahRes.error) {
+          console.warn("Supabase kanal_sekolah warning/RLS notice:", sekolahRes.error.message);
+          return null;
+        }
+
+        if (data && data.length > 0) {
+          return data.map((item: any) => {
+            const schoolName = item.nama || item.nama_sekolah || "PAUD / PNF";
+            const sub = item.tingkat || item.jenjang || "PAUD";
+            const isKemenag = ["RA", "MI", "MTs", "MA", "PAUD TPQ"].includes(sub);
+
+            // 1. Resolusi Kelurahan dari foreign key wilayah
+            const kelObj = item.kelurahan_id ? wilayahMap.get(item.kelurahan_id) : null;
+            let rawKel = kelObj?.nama || "";
+
+            // 2. Resolusi Kecamatan dari foreign key wilayah atau parent kelurahan
+            const kecObj = item.kecamatan_id 
+              ? wilayahMap.get(item.kecamatan_id) 
+              : (kelObj?.parentId ? wilayahMap.get(kelObj.parentId) : null);
+            let rawKec = kecObj?.nama || "";
+
+            // 3. Ekstrak nama Kelurahan & Kecamatan dari alamat jika belum teresolusi
+            if (!rawKel && item.alamat) {
+              const kelMatch = item.alamat.match(/(?:Kel(?:urahan)?\.?|Desa)\s*([^,]+)/i);
+              if (kelMatch && kelMatch[1]) rawKel = kelMatch[1].trim();
+            }
+            if (!rawKec && item.alamat) {
+              const kecMatch = item.alamat.match(/(?:Kec(?:amatan)?\.?)\s*([^,]+)/i);
+              if (kecMatch && kecMatch[1]) rawKec = kecMatch[1].trim();
+            }
+
+            // 4. Pencocokan Cerdas ke 27 Kelurahan Resmi Kota Tegal (100% Coverage)
+            if (!rawKel || rawKel === "Kota Tegal" || !rawKec || rawKec === "Kota Tegal") {
+              const combined = ((schoolName || "") + " " + (item.alamat || "")).toLowerCase();
+              for (const [key, val] of Object.entries(MASTER_KELURAHAN_KECAMATAN_MAP)) {
+                if (combined.includes(key)) {
+                  rawKel = (!rawKel || rawKel === "Kota Tegal") ? val.kel : rawKel;
+                  rawKec = (!rawKec || rawKec === "Kota Tegal") ? val.kec : rawKec;
+                  break;
+                }
+              }
+            }
+
+            // 5. Pemetaan Khusus TK Negeri Pembina (4 Lembaga di Kota Tegal)
+            const upperName = schoolName.toUpperCase();
+            if (upperName.includes("PEMBINA KOTA TEGAL") || upperName.includes("PEMBINA TEGAL BARAT") || item.npsn === "20351671") {
+              rawKel = "Pekauman";
+              rawKec = "Tegal Barat";
+            } else if (upperName.includes("PEMBINA TEGAL TIMUR") || item.npsn === "20351677") {
+              rawKel = "Panggung";
+              rawKec = "Tegal Timur";
+            } else if (upperName.includes("PEMBINA TEGAL SELATAN") || item.npsn === "69966113") {
+              rawKel = "Keturen";
+              rawKec = "Tegal Selatan";
+            } else if (upperName.includes("PEMBINA KECAMATAN MARGADANA") || upperName.includes("PEMBINA MARGADANA") || item.npsn === "20351684") {
+              rawKel = "Margadana";
+              rawKec = "Margadana";
+            } else {
+              rawKel = rawKel || "Kota Tegal";
+              rawKec = rawKec || "Kota Tegal";
+            }
+
+            // Normalisasi ID wilayah untuk pencocokan filter
+            const normKelId = rawKel.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-");
+            const normKecId = rawKec.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-");
+
+            return {
+              id: item.id || item.npsn,
+              npsn: item.npsn || "-",
+              nama: schoolName,
+              jenjang: (item.jenjang || "PAUD") as JenjangSekolahType,
+              subJenjang: sub,
+              naungan: isKemenag ? ("KEMENAG" as const) : ("DISDIK" as const),
+              status: schoolName.toUpperCase().includes("NEGERI") ? ("NEGERI" as const) : ("SWASTA" as const),
+              kelurahan: rawKel,
+              kelurahanId: normKelId,
+              kecamatan: rawKec,
+              kecamatanId: normKecId,
+              alamat: item.alamat || `Kel. ${rawKel}, Kec. ${rawKec}, Kota Tegal`,
+            };
+          });
+        }
+
+        return null;
+      } catch (err) {
+        console.error("Error fetching PAUD/PNF from Supabase:", err);
+        return null;
       }
     },
     staleTime: 1000 * 60 * 5,
   });
 
-  // Ambil Keanggotaan Kanal Aktif Pengguna
-  const { data: userMemberships = [] } = useQuery({
-    queryKey: ["user_kanal_memberships_active"],
-    queryFn: async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return [];
+  // Sekolah Filtered Results (Presisi PAUD & PNF)
+  const filteredSekolahList = useMemo(() => {
+    // 1. Tentukan sumber data (utamakan dari Supabase dbSekolahList jika ada, fallback ke MASTER_ALL_SEKOLAH_TEGAL)
+    const sourceList: MasterSekolahItem[] = (dbSekolahList && dbSekolahList.length > 0)
+      ? dbSekolahList
+      : MASTER_ALL_SEKOLAH_TEGAL;
 
-      const { data, error } = await supabase
-        .from("user_kanal_memberships")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+    // 2. Filter data secara responsif & presisi
+    return sourceList.filter((s) => {
+      // Pastikan hanya kategori PAUD & PNF yang tampil di Tab ini
+      const isPaudPnf =
+        ["PAUD", "KESETARAAN"].includes(s.jenjang) ||
+        ["TK", "RA", "KB", "Pos PAUD", "PAUD TPQ", "TPA", "PKBM", "SKB"].includes(s.subJenjang) ||
+        s.nama.toLowerCase().includes("pkbm") ||
+        s.nama.toLowerCase().includes("skb") ||
+        s.nama.toLowerCase().includes("paud") ||
+        s.nama.toUpperCase().includes("TK ") ||
+        s.nama.toUpperCase().includes("RA ") ||
+        s.nama.toUpperCase().includes("KB ") ||
+        s.nama.toUpperCase().includes("TPA ") ||
+        s.nama.toUpperCase().includes("PEMBINA");
 
-      if (error) return [];
-      return data || [];
-    },
-    staleTime: 1000 * 30,
-  });
+      if (!isPaudPnf) return false;
 
-  // Inisialisasi Kelurahan Domisili pada Posyandu Form
-  useEffect(() => {
-    if (userProfile?.domisili_kelurahan_id && !posyanduForm.kelurahanId) {
-      setPosyanduForm((prev) => ({
-        ...prev,
-        kelurahanId: userProfile.domisili_kelurahan_id || "mintaragen",
-      }));
-    } else if (!posyanduForm.kelurahanId) {
-      setPosyanduForm((prev) => ({
-        ...prev,
-        kelurahanId: "mintaragen",
-      }));
-    }
-  }, [userProfile, posyanduForm.kelurahanId]);
+      // 1. Filter Kecamatan
+      if (
+        kecamatanSekolah &&
+        kecamatanSekolah !== "semua" &&
+        kecamatanSekolah !== "all"
+      ) {
+        const cleanKec = kecamatanSekolah.replace("tegal-", "").toLowerCase().trim();
+        const sKec = s.kecamatan.toLowerCase().trim();
+        const sKecId = s.kecamatanId.toLowerCase().trim();
+        const matchKec =
+          sKecId === kecamatanSekolah ||
+          sKecId.includes(cleanKec) ||
+          sKec.includes(cleanKec) ||
+          cleanKec.includes(sKec) ||
+          (s.alamat && s.alamat.toLowerCase().includes(cleanKec)) ||
+          s.nama.toLowerCase().includes(cleanKec);
 
-  // 2. Fetch Master Data Kecamatan dari Supabase
-  const { data: dbKecamatan = [], isLoading: isLoadingKec } = useQuery({
-    queryKey: ["master_kecamatan"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("wilayah")
-        .select("id, kode, nama")
-        .eq("tingkat", "KECAMATAN")
-        .order("kode", { ascending: true });
-
-      if (error || !data || data.length === 0) {
-        return null;
+        if (!matchKec) return false;
       }
-      return data.map((k) => ({
-        id: k.id,
-        kode: k.kode,
-        slug: k.nama.toLowerCase().replace(/\s+/g, "-"),
-        nama: k.nama,
-      }));
-    },
-    staleTime: 60 * 1000,
-  });
 
-  const kecamatanList = useMemo(() => {
-    if (dbKecamatan && dbKecamatan.length > 0) {
-      return dbKecamatan;
-    }
-    return FALLBACK_KECAMATAN;
-  }, [dbKecamatan]);
+      // 2. Filter Kelurahan
+      if (
+        kelurahanSekolah &&
+        kelurahanSekolah !== "semua" &&
+        kelurahanSekolah !== "all"
+      ) {
+        const cleanKel = kelurahanSekolah.replace(/-kel$/, "").replace(/-/g, " ").toLowerCase().trim();
+        const schoolKel = s.kelurahan.toLowerCase().replace(/-/g, " ").trim();
+        const schoolKelId = s.kelurahanId.toLowerCase().trim();
+        const matchKel =
+          schoolKelId === kelurahanSekolah ||
+          schoolKelId === cleanKel ||
+          schoolKel.includes(cleanKel) ||
+          cleanKel.includes(schoolKel) ||
+          (s.alamat && s.alamat.toLowerCase().includes(cleanKel)) ||
+          (s.nama.toLowerCase().includes(cleanKel) && !s.nama.toLowerCase().includes("kota tegal"));
 
-  const activeKecamatan = useMemo(() => {
-    if (!filters.kecamatan) return null;
-    return (
-      kecamatanList.find(
-        (k) => k.id === filters.kecamatan || k.slug === filters.kecamatan
-      ) || null
-    );
-  }, [filters.kecamatan, kecamatanList]);
-
-  // 3. Fetch Master Data Kelurahan
-  const { data: dbKelurahan = [], isLoading: isLoadingKel } = useQuery({
-    queryKey: ["master_kelurahan", activeKecamatan?.id || activeKecamatan?.slug],
-    queryFn: async () => {
-      if (!activeKecamatan) return [];
-      const { data, error } = await supabase
-        .from("wilayah")
-        .select("id, kode, nama, parent_id")
-        .eq("parent_id", activeKecamatan.id)
-        .order("nama", { ascending: true });
-
-      if (error || !data || data.length === 0) {
-        return null;
+        if (!matchKel) return false;
       }
-      return data.map((kl) => ({
-        id: kl.id,
-        kode: kl.kode,
-        slug: kl.nama.toLowerCase().replace(/\s+/g, "-"),
-        nama: kl.nama,
-      }));
-    },
-    enabled: !!activeKecamatan,
-    staleTime: 60 * 1000,
-  });
 
-  const kelurahanList = useMemo(() => {
-    if (dbKelurahan && dbKelurahan.length > 0) {
-      return dbKelurahan;
-    }
-    const kecKey = activeKecamatan?.slug || filters.kecamatan;
-    if (kecKey && FALLBACK_KELURAHAN[kecKey]) {
-      return FALLBACK_KELURAHAN[kecKey];
-    }
-    return [];
-  }, [dbKelurahan, activeKecamatan, filters.kecamatan]);
+      // 3. Filter Jenjang / Kategori
+      if (
+        jenjangSekolah &&
+        jenjangSekolah !== "semua" &&
+        jenjangSekolah !== "all"
+      ) {
+        if (jenjangSekolah === "TK") {
+          if (s.subJenjang !== "TK" && !s.nama.toUpperCase().includes("TK ") && !s.nama.toUpperCase().includes("PEMBINA")) return false;
+        } else if (jenjangSekolah === "RA") {
+          if (s.subJenjang !== "RA" && !s.nama.toUpperCase().includes("RA ")) return false;
+        } else if (jenjangSekolah === "KB") {
+          if (s.subJenjang !== "KB" && !s.nama.toUpperCase().includes("KB ")) return false;
+        } else if (jenjangSekolah === "POS_PAUD") {
+          const isPos = ["Pos PAUD", "PAUD TPQ", "SPS"].includes(s.subJenjang) ||
+            s.nama.toUpperCase().includes("POS PAUD") ||
+            s.nama.toUpperCase().includes("PAUD TPQ") ||
+            s.nama.toUpperCase().includes("SPS");
+          if (!isPos) return false;
+        } else if (jenjangSekolah === "TPA") {
+          if (s.subJenjang !== "TPA" && !s.nama.toUpperCase().includes("TPA ")) return false;
+        } else if (jenjangSekolah === "PKBM") {
+          if (s.subJenjang !== "PKBM" && !s.nama.toUpperCase().includes("PKBM")) return false;
+        } else if (jenjangSekolah === "SKB") {
+          if (s.subJenjang !== "SKB" && !s.nama.toUpperCase().includes("SKB")) return false;
+        } else if (jenjangSekolah === "PAUD") {
+          if (s.jenjang !== "PAUD") return false;
+        } else if (jenjangSekolah === "KESETARAAN") {
+          if (s.jenjang !== "KESETARAAN") return false;
+        }
+      }
 
-  const activeKelurahan = useMemo(() => {
-    if (!filters.kelurahan) return null;
-    return (
-      kelurahanList.find(
-        (kl) => kl.id === filters.kelurahan || (kl as any).slug === filters.kelurahan
-      ) || null
-    );
-  }, [filters.kelurahan, kelurahanList]);
+      // 4. Filter Pencarian Teks
+      if (searchSekolahText.trim()) {
+        const query = searchSekolahText.toLowerCase().trim();
+        const matchNama = s.nama.toLowerCase().includes(query);
+        const matchNpsn = s.npsn.toLowerCase().includes(query);
+        const matchKel = s.kelurahan.toLowerCase().includes(query);
+        const matchKec = s.kecamatan.toLowerCase().includes(query);
+        const matchAlamat = (s.alamat || "").toLowerCase().includes(query);
+        if (!matchNama && !matchNpsn && !matchKel && !matchKec && !matchAlamat) return false;
+      }
 
-  // 4. Fetch Master Units untuk Discovery Filter
-  const { data: dbUnits = [], isLoading: isLoadingUnits } = useQuery({
-    queryKey: ["master_units", activeKelurahan?.id || (activeKelurahan as any)?.slug],
-    queryFn: async () => {
-      if (!activeKelurahan?.id) return [];
-
-      const [posRes, sekRes] = await Promise.all([
-        supabase
-          .from("kanal_posyandu")
-          .select("id, nama, alamat")
-          .eq("kelurahan_id", activeKelurahan.id)
-          .order("nama", { ascending: true }),
-        supabase
-          .from("kanal_sekolah")
-          .select("id, nama, tingkat, alamat")
-          .eq("kelurahan_id", activeKelurahan.id)
-          .order("nama", { ascending: true }),
-      ]);
-
-      const posList = (posRes.data || []).map((p) => ({
-        id: p.id,
-        nama: p.nama,
-        tipe: "Posyandu" as const,
-        alamat: p.alamat,
-      }));
-
-      const sekList = (sekRes.data || []).map((s) => ({
-        id: s.id,
-        nama: `${s.nama} (${s.tingkat})`,
-        tipe: "Sekolah" as const,
-        alamat: s.alamat,
-      }));
-
-      const combined = [...posList, ...sekList];
-      return combined.length > 0 ? combined : null;
-    },
-    enabled: !!activeKelurahan?.id,
-    staleTime: 60 * 1000,
-  });
-
-  const availableUnits = useMemo(() => {
-    if (dbUnits && dbUnits.length > 0) {
-      return dbUnits;
-    }
-    if (activeKelurahan && "units" in activeKelurahan && Array.isArray(activeKelurahan.units)) {
-      return activeKelurahan.units;
-    }
-    return [];
-  }, [dbUnits, activeKelurahan]);
-
-  // Daftar Semua 27 Kelurahan Kota Tegal untuk Form Posyandu Modal
-  const all27Kelurahan = useMemo(() => {
-    const list: { id: string; nama: string; kecamatan: string }[] = [];
-    Object.entries(FALLBACK_KELURAHAN).forEach(([kecKey, kelList]) => {
-      const kecName =
-        FALLBACK_KECAMATAN.find((k) => k.slug === kecKey)?.nama || kecKey;
-      kelList.forEach((kel) => {
-        list.push({
-          id: kel.id,
-          nama: kel.nama,
-          kecamatan: kecName,
-        });
-      });
+      return true;
     });
-    return list;
-  }, []);
+  }, [
+    dbSekolahList,
+    kecamatanSekolah,
+    kelurahanSekolah,
+    jenjangSekolah,
+    searchSekolahText,
+  ]);
 
-  // Daftar Posyandu pada Kelurahan yang dipilih di Modal Posyandu
-  const posyanduOptionsInSelectedKel = useMemo(() => {
-    const targetKelId = posyanduForm.kelurahanId;
-    if (!targetKelId) return [];
-
-    for (const kelList of Object.values(FALLBACK_KELURAHAN)) {
-      const found = kelList.find(
-        (k) =>
-          k.id === targetKelId ||
-          k.nama.toLowerCase() === targetKelId.toLowerCase() ||
-          k.id === `kel-${targetKelId.toLowerCase()}`
+  // OPD Filtered Results
+  const filteredOpdList = useMemo(() => {
+    return MASTER_OPD_TEGAL.filter((opd) => {
+      if (!searchOpdText.trim()) return true;
+      const query = searchOpdText.toLowerCase();
+      return (
+        opd.nama.toLowerCase().includes(query) ||
+        opd.kode.toLowerCase().includes(query) ||
+        opd.sektor.toLowerCase().includes(query) ||
+        opd.deskripsi.toLowerCase().includes(query)
       );
-      if (found) {
-        return found.units.filter((u) => u.tipe === "Posyandu");
-      }
-    }
-    // Fallback umum
-    return [
-      { id: "pos-utama-1", nama: "Posyandu Melati I", tipe: "Posyandu" as const },
-      { id: "pos-utama-2", nama: "Posyandu Melati II", tipe: "Posyandu" as const },
-    ];
-  }, [posyanduForm.kelurahanId]);
+    });
+  }, [searchOpdText]);
 
-  // Daftar Sekolah Filtered by Jenjang
-  const filteredSekolahOptions = useMemo(() => {
-    if (sekolahForm.jenjangFilter === "SEMUA") {
-      return MASTER_ALL_SEKOLAH_TEGAL;
+  // Buka Modal Gabung
+  const handleOpenJoinModal = (item: {
+    tipe: "POSYANDU" | "SEKOLAH" | "OPD";
+    id: string;
+    nama: string;
+    detail: string;
+    kelurahan?: string;
+    kecamatan?: string;
+    jenjang?: string;
+  }) => {
+    setModalData(item);
+    // Set default peran berdasarkan tipe kanal
+    if (item.tipe === "POSYANDU") {
+      setSelectedPeran(["Warga"]);
+    } else if (item.tipe === "SEKOLAH") {
+      setSelectedPeran(["Orang Tua / Wali Siswa"]);
+    } else {
+      setSelectedPeran(["Warga Penerima Manfaat / Masyarakat Umum"]);
     }
-    return MASTER_ALL_SEKOLAH_TEGAL.filter(
-      (s) => s.tingkat === sekolahForm.jenjangFilter
+    setIsModalOpen(true);
+  };
+
+  // Toggle Peran Modal
+  const handleTogglePeran = (roleId: string) => {
+    setSelectedPeran((prev) =>
+      prev.includes(roleId)
+        ? prev.length > 1
+          ? prev.filter((r) => r !== roleId)
+          : prev // Cegah uncheck semua (minimal 1)
+        : [...prev, roleId]
     );
-  }, [sekolahForm.jenjangFilter]);
-
-  // Handlers untuk Discovery Filter
-  const handleKecamatanChange = (value: string | null) => {
-    setFilters({
-      kecamatan: value || "",
-      kelurahan: "",
-      unit: "",
-    });
   };
 
-  const handleKelurahanChange = (value: string | null) => {
-    setFilters({
-      kelurahan: value || "",
-      unit: "",
-    });
-  };
-
-  const handleUnitChange = (value: string | null) => {
-    setFilters({
-      unit: value || "",
-    });
-  };
-
-  const handleReset = () => {
-    setFilters({
-      kecamatan: "",
-      kelurahan: "",
-      unit: "",
-    });
-    toast.info("Filter wilayah telah direset.");
-  };
-
-  const selectedUnitObj = availableUnits.find((u) => u.id === filters.unit);
-
-  // ==============================================================================
-  // 4. SUBMISSION HANDLERS UNTUK 3 MODAL GABUNG KANAL
-  // ==============================================================================
-
-  // Form 1: Gabung Kanal Posyandu
-  const handleJoinPosyandu = async (e: React.FormEvent) => {
+  // Submit Modal Gabung
+  const handleSubmitJoin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!posyanduForm.posyanduId) {
-      toast.error("Pilih Posyandu terlebih dahulu.");
+    if (!modalData) return;
+
+    if (selectedPeran.length === 0) {
+      toast.error("Pilih minimal satu peran Anda dalam kanal ini.");
       return;
     }
 
-    const selectedPosyandu = posyanduOptionsInSelectedKel.find(
-      (p) => p.id === posyanduForm.posyanduId
-    );
-    const namaKanal = selectedPosyandu?.nama || "Posyandu Wilayah";
-
     setIsSubmitting(true);
     try {
-      const res = await joinKanalAction({
-        kanalId: posyanduForm.posyanduId,
-        kanalNama: namaKanal,
-        tipeKanal: "POSYANDU",
-        peran: posyanduForm.peran,
+      const response = await joinKanalAction({
+        kanalId: modalData.id,
+        kanalNama: modalData.nama,
+        tipeKanal: modalData.tipe,
+        peran: selectedPeran,
         metadata: {
-          kelurahan_id: posyanduForm.kelurahanId,
+          kelurahan: modalData.kelurahan,
+          kecamatan: modalData.kecamatan,
+          jenjang: modalData.jenjang,
+          detail: modalData.detail,
         },
       });
 
-      if (res.success) {
-        toast.success("Berhasil Bergabung ke Kanal Posyandu!", {
-          description: `Anda telah terdaftar di ${namaKanal} sebagai ${posyanduForm.peran}.`,
+      if (response.success) {
+        toast.success(`Berhasil bergabung ke kanal ${modalData.nama}!`, {
+          description: `Peran Anda: ${selectedPeran.join(", ")}`,
         });
-        setIsPosyanduModalOpen(false);
-        queryClient.invalidateQueries({ queryKey: ["user_kanal_memberships_active"] });
+
+        queryClient.invalidateQueries({ queryKey: ["user_kanal_memberships"] });
+        setIsModalOpen(false);
+
+        // Redirect ke rute kanal spesifik
+        const categorySlug = modalData.tipe.toLowerCase();
+        router.push(`/kanal/${categorySlug}/${encodeURIComponent(modalData.id)}`);
       } else {
-        toast.error("Gagal Bergabung", {
-          description: res.error || "Terjadi kesalahan saat memproses pendaftaran.",
-        });
+        toast.error(response.error || "Gagal bergabung ke kanal.");
       }
-    } catch (err) {
-      toast.error("Kesalahan Sistem", {
-        description: err instanceof Error ? err.message : "Tidak dapat terhubung ke server.",
-      });
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Terjadi kesalahan sistem.");
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  // Form 2: Gabung Kanal Sekolah
-  const handleJoinSekolah = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!sekolahForm.sekolahId) {
-      toast.error("Pilih Satuan Pendidikan terlebih dahulu.");
-      return;
-    }
-
-    const selectedSekolah = MASTER_ALL_SEKOLAH_TEGAL.find(
-      (s) => s.id === sekolahForm.sekolahId
-    );
-    const namaKanal = selectedSekolah?.nama || "Satuan Pendidikan";
-
-    setIsSubmitting(true);
-    try {
-      const res = await joinKanalAction({
-        kanalId: sekolahForm.sekolahId,
-        kanalNama: namaKanal,
-        tipeKanal: "SEKOLAH",
-        peran: sekolahForm.peran,
-        metadata: {
-          tingkat: selectedSekolah?.tingkat,
-          kelurahan: selectedSekolah?.kelurahan,
-          kecamatan: selectedSekolah?.kecamatan,
-        },
-      });
-
-      if (res.success) {
-        toast.success("Berhasil Bergabung ke Kanal Sekolah!", {
-          description: `Anda telah terdaftar di ${namaKanal} sebagai ${sekolahForm.peran}.`,
-        });
-        setIsSekolahModalOpen(false);
-        queryClient.invalidateQueries({ queryKey: ["user_kanal_memberships_active"] });
-      } else {
-        toast.error("Gagal Bergabung", {
-          description: res.error || "Terjadi kesalahan saat memproses pendaftaran.",
-        });
-      }
-    } catch (err) {
-      toast.error("Kesalahan Sistem", {
-        description: err instanceof Error ? err.message : "Tidak dapat terhubung ke server.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Form 3: Gabung Kanal OPD
-  const handleJoinOpd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!opdForm.opdId) {
-      toast.error("Pilih OPD / Dinas terlebih dahulu.");
-      return;
-    }
-
-    const selectedOpd = MASTER_OPD_TEGAL.find((o) => o.id === opdForm.opdId);
-    const namaKanal = selectedOpd?.nama || "OPD Kota Tegal";
-
-    setIsSubmitting(true);
-    try {
-      const res = await joinKanalAction({
-        kanalId: opdForm.opdId,
-        kanalNama: namaKanal,
-        tipeKanal: "OPD",
-        peran: opdForm.peran,
-        metadata: {
-          kode_opd: selectedOpd?.kode,
-          sektor: selectedOpd?.sektor,
-        },
-      });
-
-      if (res.success) {
-        toast.success("Berhasil Bergabung ke Kanal OPD!", {
-          description: `Anda telah terdaftar di ${namaKanal} sebagai ${opdForm.peran}.`,
-        });
-        setIsOpdModalOpen(false);
-        queryClient.invalidateQueries({ queryKey: ["user_kanal_memberships_active"] });
-      } else {
-        toast.error("Gagal Bergabung", {
-          description: res.error || "Terjadi kesalahan saat memproses pendaftaran.",
-        });
-      }
-    } catch (err) {
-      toast.error("Kesalahan Sistem", {
-        description: err instanceof Error ? err.message : "Tidak dapat terhubung ke server.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const isLiveDb = Boolean(dbKecamatan && dbKecamatan.length > 0);
 
   return (
-    <Card className="border border-border/80 bg-card shadow-xs">
-      <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-              <Compass className="size-4.5" />
+    <Card className="w-full border-border/80 bg-card/95 shadow-sm backdrop-blur-xs">
+      {/* Header Utama */}
+      <CardHeader className="border-b border-border/50 pb-5">
+        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-1">
+              <Compass className="size-4" />
+              <span>Eksplorasi & Integrasi Terpadu</span>
             </div>
-            <div>
-              <CardTitle className="text-base font-semibold">
-                Kanal Discovery & Integrasi Komunitas
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Bergabung ke kanal Posyandu, Sekolah, atau Organisasi Perangkat Daerah Kota Tegal
-              </CardDescription>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <Badge
-              variant="outline"
-              className={
-                isLiveDb
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] gap-1"
-                  : "text-muted-foreground text-[11px] gap-1"
-              }
-            >
-              <Database className="size-3" />
-              {isLiveDb ? "Supabase Live" : "Master Tegal"}
-            </Badge>
-            <Badge variant="secondary" className="text-[11px] gap-1">
-              <Filter className="size-3" />
-              nuqs URL
-            </Badge>
+            <CardTitle className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+              Kanal Discovery & Integrasi Komunitas
+            </CardTitle>
+            <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              Temukan dan bergabunglah dengan kanal Posyandu, Sekolah, dan OPD resmi Kota Tegal.
+            </CardDescription>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* ============================================================================== */}
-        {/* 3 OPSI TOMBOL UTAMA GABUNG KANAL (Posyandu, Sekolah, OPD) */}
-        {/* ============================================================================== */}
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-          {/* 1. Kanal Posyandu Button */}
-          <button
-            type="button"
-            onClick={() => setIsPosyanduModalOpen(true)}
-            className="group relative flex flex-col items-start justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-left transition-all hover:border-emerald-500/60 hover:bg-emerald-500/10 hover:shadow-xs active:scale-[0.98]"
-          >
-            <div className="flex w-full items-center justify-between">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                <HeartPulse className="size-4.5" />
-              </div>
-              <Badge
-                variant="outline"
-                className="border-emerald-500/40 bg-emerald-500/15 text-[10px] font-medium text-emerald-700 dark:text-emerald-300"
-              >
-                Domisili Kelurahan
-              </Badge>
-            </div>
-            <div className="mt-2.5 space-y-0.5">
-              <h4 className="text-xs font-semibold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                1. Kanal Posyandu
-              </h4>
-              <p className="text-[11px] text-muted-foreground leading-tight">
-                Pilih posyandu terdekat di kelurahan domisili Anda
-              </p>
-            </div>
-          </button>
+      <CardContent className="p-4 sm:p-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+          {/* Tabbed Navigation Bar */}
+          <TabsList className="grid w-full grid-cols-3 h-12 bg-muted/60 p-1.5 rounded-xl">
+            <TabsTrigger
+              value="posyandu"
+              className="gap-2 text-xs sm:text-sm py-2 data-[state=active]:bg-background data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:shadow-xs transition-all"
+            >
+              <HeartHandshake className="size-4" />
+              <span className="font-semibold">Kanal Posyandu</span>
+            </TabsTrigger>
 
-          {/* 2. Kanal Sekolah Button */}
-          <button
-            type="button"
-            onClick={() => setIsSekolahModalOpen(true)}
-            className="group relative flex flex-col items-start justify-between rounded-xl border border-indigo-500/30 bg-indigo-500/5 p-3 text-left transition-all hover:border-indigo-500/60 hover:bg-indigo-500/10 hover:shadow-xs active:scale-[0.98]"
-          >
-            <div className="flex w-full items-center justify-between">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
-                <GraduationCap className="size-4.5" />
-              </div>
-              <Badge
-                variant="outline"
-                className="border-indigo-500/40 bg-indigo-500/15 text-[10px] font-medium text-indigo-700 dark:text-indigo-300"
-              >
-                PAUD / TK / SD / SMP
-              </Badge>
-            </div>
-            <div className="mt-2.5 space-y-0.5">
-              <h4 className="text-xs font-semibold text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                2. Kanal Sekolah
-              </h4>
-              <p className="text-[11px] text-muted-foreground leading-tight">
-                Pilih satuan pendidikan anak di Kota Tegal
-              </p>
-            </div>
-          </button>
+            <TabsTrigger
+              value="sekolah"
+              className="gap-2 text-xs sm:text-sm py-2 data-[state=active]:bg-background data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-xs transition-all"
+            >
+              <GraduationCap className="size-4" />
+              <span className="font-semibold">Kanal Sekolah</span>
+            </TabsTrigger>
 
-          {/* 3. Kanal OPD Button */}
-          <button
-            type="button"
-            onClick={() => setIsOpdModalOpen(true)}
-            className="group relative flex flex-col items-start justify-between rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-left transition-all hover:border-amber-500/60 hover:bg-amber-500/10 hover:shadow-xs active:scale-[0.98]"
-          >
-            <div className="flex w-full items-center justify-between">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400">
-                <Landmark className="size-4.5" />
-              </div>
-              <Badge
-                variant="outline"
-                className="border-amber-500/40 bg-amber-500/15 text-[10px] font-medium text-amber-700 dark:text-amber-300"
-              >
-                Dinas & Layanan
-              </Badge>
-            </div>
-            <div className="mt-2.5 space-y-0.5">
-              <h4 className="text-xs font-semibold text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400">
-                3. Kanal OPD / Dinas
-              </h4>
-              <p className="text-[11px] text-muted-foreground leading-tight">
-                Pilih dinas daerah terkait program & layanan publik
-              </p>
-            </div>
-          </button>
-        </div>
+            <TabsTrigger
+              value="opd"
+              className="gap-2 text-xs sm:text-sm py-2 data-[state=active]:bg-background data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-400 data-[state=active]:shadow-xs transition-all"
+            >
+              <Building2 className="size-4" />
+              <span className="font-semibold">Kanal OPD / Dinas</span>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* ============================================================================== */}
-        {/* KEANGGOTAAN KANAL AKTIF USER (JIKA ADA) */}
-        {/* ============================================================================== */}
-        {userMemberships.length > 0 && (
-          <div className="rounded-lg border border-border/70 bg-muted/30 p-2.5">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-                <Users className="size-3.5 text-primary" />
-                Kanal yang Telah Anda Ikuti ({userMemberships.length}):
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {userMemberships.map((m: any) => (
-                <Badge
-                  key={m.id || m.kanal_id}
-                  variant="outline"
-                  className="bg-background/80 text-[11px] gap-1 py-0.5 px-2 font-normal"
-                >
-                  <Check className="size-3 text-emerald-500" />
-                  <strong className="font-medium text-foreground">{m.kanal_nama}</strong>
-                  <span className="text-muted-foreground">({m.peran || m.tipe_kanal})</span>
+          {/* ================================================================= */}
+          {/* TAB 1: KANAL POSYANDU (Filter Bertahap: Kecamatan -> Kelurahan -> Tampilkan) */}
+          {/* ================================================================= */}
+          <TabsContent value="posyandu" className="space-y-6 focus-visible:outline-none">
+            {/* Box Filter Wilayah */}
+            <div className="rounded-xl border border-border/70 bg-muted/20 p-4 sm:p-5 space-y-4">
+              <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <HeartPulse className="size-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">Filter Wilayah Posyandu</h3>
+                    <p className="text-[11px] text-muted-foreground">
+                      Pilih Kecamatan dan Kelurahan untuk memuat daftar Posyandu
+                    </p>
+                  </div>
+                </div>
+
+                <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[11px]">
+                  Layanan Kesehatan & Anak
                 </Badge>
-              ))}
-            </div>
-          </div>
-        )}
+              </div>
 
-        {/* ============================================================================== */}
-        {/* DROPDOWN FILTER WILAYAH BERTINGKAT (DISCOVERY BROWSER) */}
-        {/* ============================================================================== */}
-        <div className="space-y-2 pt-1 border-t border-border/50">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-              <Filter className="size-3.5" />
-              Penjelajah Wilayah & Kanal Terdaftar:
-            </span>
-            {(filters.kecamatan || filters.kelurahan || filters.unit) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleReset}
-                className="text-xs h-7 px-2 text-muted-foreground hover:text-foreground"
-              >
-                <RotateCcw className="size-3" />
-                Reset Filter
-              </Button>
+              {/* Form Grid: Kecamatan, Kelurahan, & Tombol Tampilkan */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-end">
+                {/* 1. Dropdown Kecamatan */}
+                <div className="sm:col-span-4 space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground">1. Kecamatan Domisili</label>
+                  <Select value={kecamatanPosyandu} onValueChange={handleKecamatanPosyanduChange}>
+                    <SelectTrigger className="w-full text-xs h-9 bg-background">
+                      <SelectValue placeholder="Pilih Kecamatan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="semua">Semua Kecamatan (Kota Tegal)</SelectItem>
+                      {FALLBACK_KECAMATAN.map((k) => (
+                        <SelectItem key={k.id} value={k.id}>
+                          Kecamatan {k.nama}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* 2. Dropdown Kelurahan */}
+                <div className="sm:col-span-4 space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground">2. Kelurahan Domisili</label>
+                  <Select value={kelurahanPosyandu} onValueChange={(val) => setKelurahanPosyandu(val || "semua")}>
+                    <SelectTrigger className="w-full text-xs h-9 bg-background">
+                      <SelectValue placeholder="Pilih Kelurahan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="semua">
+                        {kecamatanPosyandu === "semua" ? "Semua Kelurahan" : "Semua Kelurahan di Kecamatan Ini"}
+                      </SelectItem>
+                      {availableKelurahanList.map((kel) => (
+                        <SelectItem key={kel.id} value={kel.id}>
+                          Kelurahan {kel.nama}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* 3. Tombol Tampilkan & Reset */}
+                <div className="sm:col-span-4 flex items-center gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => setShowPosyanduResults(true)}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-9 gap-1.5 font-semibold shadow-xs"
+                  >
+                    <Eye className="size-3.5" />
+                    <span>Tampilkan Posyandu</span>
+                  </Button>
+
+                  {showPosyanduResults && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        setKecamatanPosyandu("semua");
+                        setKelurahanPosyandu("semua");
+                        setSearchPosyanduText("");
+                        setShowPosyanduResults(false);
+                      }}
+                      className="h-9 w-9 text-muted-foreground hover:text-foreground shrink-0"
+                      title="Reset Filter"
+                    >
+                      <RotateCcw className="size-3.5" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Area Hasil Daftar Posyandu */}
+            {!showPosyanduResults ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/10 p-8 text-center">
+                <div className="flex size-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 mb-3">
+                  <SlidersHorizontal className="size-5" />
+                </div>
+                <h4 className="text-sm font-semibold text-foreground">Daftar Posyandu Siap Dimuat</h4>
+                <p className="text-xs text-muted-foreground mt-1 max-w-md">
+                  Silakan tentukan Kecamatan & Kelurahan domisili Anda di atas, kemudian klik tombol{" "}
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">"Tampilkan Posyandu"</span>{" "}
+                  untuk menelusuri data resmi Posyandu Kota Tegal.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Search Bar Tambahan di atas hasil */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
+                  <div className="relative w-full sm:w-80">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Cari nama posyandu..."
+                      value={searchPosyanduText}
+                      onChange={(e) => setSearchPosyanduText(e.target.value)}
+                      className="pl-8 text-xs h-8.5 bg-background"
+                    />
+                    {searchPosyanduText && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchPosyanduText("")}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground self-end sm:self-auto">
+                    <span>Ditemukan:</span>
+                    <Badge variant="secondary" className="font-bold text-foreground">
+                      {filteredPosyanduList.length} Posyandu
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* List Posyandu */}
+                {filteredPosyanduList.length === 0 ? (
+                  <div className="rounded-xl border border-border bg-card p-8 text-center">
+                    <HeartHandshake className="size-8 text-muted-foreground/50 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-foreground">Tidak Ada Posyandu Ditemukan</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Coba sesuaikan kata kunci pencarian atau ganti pilihan kelurahan.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[480px] overflow-y-auto pr-1">
+                    {filteredPosyanduList.map((p) => (
+                      <div
+                        key={p.id}
+                        className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-4 transition-all hover:border-emerald-500/50 hover:shadow-xs"
+                      >
+                        <div className="space-y-1.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-1">{p.nama}</h4>
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 shrink-0">
+                              Posyandu
+                            </Badge>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                            <span className="font-medium text-foreground/90">Kel. {p.kelurahan}</span>
+                            <span>•</span>
+                            <span>Kec. {p.kecamatan}</span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3.5 pt-3 border-t border-border/50 flex items-center justify-between gap-2">
+                          <span className="text-[10px] text-muted-foreground">Kota Tegal, Jawa Tengah</span>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() =>
+                              handleOpenJoinModal({
+                                tipe: "POSYANDU",
+                                id: p.id,
+                                nama: p.nama,
+                                detail: `Kel. ${p.kelurahan}, Kec. ${p.kecamatan}`,
+                                kelurahan: p.kelurahan,
+                                kecamatan: p.kecamatan,
+                              })
+                            }
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] h-7 px-3 gap-1 shadow-xs"
+                          >
+                            <span>Gabung</span>
+                            <ArrowRight className="size-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
-          </div>
+          </TabsContent>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {/* 1. Kecamatan */}
-            <div className="space-y-1">
-              <label className="flex items-center justify-between text-[11px] font-medium text-foreground">
-                <span className="flex items-center gap-1">
-                  <Building className="size-3 text-muted-foreground" />
-                  Kecamatan
-                </span>
-                {isLoadingKec && <Loader2 className="size-3 animate-spin text-muted-foreground" />}
-              </label>
-              <Select
-                value={filters.kecamatan || undefined}
-                onValueChange={handleKecamatanChange}
-              >
-                <SelectTrigger className="w-full text-xs">
-                  <SelectValue placeholder="Pilih Kecamatan" />
-                </SelectTrigger>
-                <SelectContent>
-                  {kecamatanList.map((kec) => (
-                    <SelectItem key={kec.id} value={kec.slug || kec.id}>
-                      Kec. {kec.nama}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* ================================================================= */}
+          {/* TAB 2: KANAL SEKOLAH (Fokus Khusus Satuan PAUD & PNF) */}
+          {/* ================================================================= */}
+          <TabsContent value="sekolah" className="space-y-6 focus-visible:outline-none">
+            {/* Keterangan Ringkas Fokus Layanan */}
+            <div className="flex items-center gap-2.5 rounded-lg border border-blue-500/20 bg-blue-500/5 px-3.5 py-2.5 text-xs text-blue-800 dark:text-blue-300">
+              <Sparkles className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
+              <p className="leading-normal">
+                <span className="font-semibold">Informasi Layanan:</span> Kanal Sekolah saat ini melayani pencarian Satuan PAUD & PNF se-Kota Tegal.
+              </p>
             </div>
 
-            {/* 2. Kelurahan */}
-            <div className="space-y-1">
-              <label className="flex items-center justify-between text-[11px] font-medium text-foreground">
-                <span className="flex items-center gap-1">
-                  <Home className="size-3 text-muted-foreground" />
-                  Kelurahan
-                </span>
-                {isLoadingKel && <Loader2 className="size-3 animate-spin text-muted-foreground" />}
-              </label>
-              <Select
-                value={filters.kelurahan || undefined}
-                onValueChange={handleKelurahanChange}
-                disabled={!filters.kecamatan || kelurahanList.length === 0}
-              >
-                <SelectTrigger className="w-full text-xs disabled:opacity-50">
-                  <SelectValue
-                    placeholder={
-                      filters.kecamatan
-                        ? `Pilih Kelurahan (${kelurahanList.length})`
-                        : "Pilih kecamatan dulu"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {kelurahanList.map((kel) => (
-                    <SelectItem key={kel.id} value={(kel as any).slug || kel.id}>
-                      Kel. {kel.nama}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Box Form Filter Bersih & Sederhana */}
+            <div className="rounded-xl border border-border/70 bg-muted/20 p-4 sm:p-5 space-y-4">
+              <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex size-7 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                    <GraduationCap className="size-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">Pencarian Satuan PAUD & PNF Kota Tegal</h3>
+                    <p className="text-[11px] text-muted-foreground">
+                      Temukan kanal resmi TK, RA, KB, Pos PAUD, PAUD TPQ, TPA, PKBM, hingga SKB se-Kota Tegal
+                    </p>
+                  </div>
+                </div>
+
+                <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 text-[11px]">
+                  PAUD & PNF
+                </Badge>
+              </div>
+
+              {/* Form Kontrol: Search Bar, Dropdown Kecamatan, Dropdown Kelurahan, & Dropdown Kategori */}
+              <div className="space-y-3">
+                {/* 1. Input Search Bar (Lebar Penuh) */}
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <Search className="size-3.5 text-blue-600 dark:text-blue-400" />
+                    <span>Cari Nama PAUD / PNF atau NPSN:</span>
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Ketik nama PAUD / PNF atau nomor NPSN (contoh: Sakila Kerti, Pembina, Al-Irsyad, SKB)..."
+                      value={searchSekolahText}
+                      onChange={(e) => setSearchSekolahText(e.target.value)}
+                      className="pl-9 pr-8 text-xs sm:text-sm h-10 bg-background rounded-lg"
+                    />
+                    {searchSekolahText && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchSekolahText("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Grid Filter: Dropdown Kecamatan, Dropdown Kelurahan, & Dropdown Kategori */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Dropdown Kecamatan */}
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-foreground flex items-center gap-1">
+                      <Building2 className="size-3 text-muted-foreground" />
+                      <span>Kecamatan</span>
+                    </label>
+                    <Select value={kecamatanSekolah} onValueChange={handleKecamatanSekolahChange}>
+                      <SelectTrigger className="w-full text-xs h-9 bg-background">
+                        <SelectValue placeholder="Semua Kecamatan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="semua">Semua Kecamatan</SelectItem>
+                        {FALLBACK_KECAMATAN.map((k) => (
+                          <SelectItem key={k.id} value={k.id}>
+                            Kecamatan {k.nama}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Dropdown Kelurahan */}
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-foreground flex items-center gap-1">
+                      <Building className="size-3 text-muted-foreground" />
+                      <span>Kelurahan</span>
+                    </label>
+                    <Select value={kelurahanSekolah} onValueChange={(val) => setKelurahanSekolah(val || "semua")}>
+                      <SelectTrigger className="w-full text-xs h-9 bg-background">
+                        <SelectValue placeholder="Semua Kelurahan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="semua">
+                          {kecamatanSekolah === "semua" ? "Semua Kelurahan" : "Semua Kelurahan di Kecamatan Ini"}
+                        </SelectItem>
+                        {availableKelurahanSekolahList.map((kel) => (
+                          <SelectItem key={kel.id} value={kel.id}>
+                            Kelurahan {kel.nama}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Dropdown Kategori Jenjang PAUD & PNF */}
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-foreground flex items-center gap-1">
+                      <GraduationCap className="size-3 text-muted-foreground" />
+                      <span>Jenis Satuan</span>
+                    </label>
+                    <Select value={jenjangSekolah} onValueChange={(val) => setJenjangSekolah(val || "semua")}>
+                      <SelectTrigger className="w-full text-xs h-9 bg-background">
+                        <SelectValue placeholder="Semua Satuan PAUD & PNF" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {OPSI_JENJANG_SEKOLAH.map((j) => (
+                          <SelectItem key={j.value} value={j.value}>
+                            {j.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* 3. Posyandu / Sekolah */}
-            <div className="space-y-1">
-              <label className="flex items-center justify-between text-[11px] font-medium text-foreground">
-                <span className="flex items-center gap-1">
-                  <School className="size-3 text-muted-foreground" />
-                  Posyandu / Sekolah
-                </span>
-                {isLoadingUnits && <Loader2 className="size-3 animate-spin text-muted-foreground" />}
-              </label>
-              <Select
-                value={filters.unit || undefined}
-                onValueChange={handleUnitChange}
-                disabled={!filters.kelurahan || availableUnits.length === 0}
-              >
-                <SelectTrigger className="w-full text-xs disabled:opacity-50">
-                  <SelectValue
-                    placeholder={
-                      filters.kelurahan
-                        ? `Pilih Kanal (${availableUnits.length})`
-                        : "Pilih kelurahan dulu"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableUnits.map((u) => (
-                    <SelectItem key={u.id} value={u.id}>
-                      <span className="truncate">
-                        [{u.tipe}] {u.nama}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
+            {/* Area Hasil Daftar Sekolah PAUD & PNF (Langsung Tampil) */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-card p-3 rounded-lg border border-border/70">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="text-muted-foreground">Filter Aktif:</span>
+                  <Badge variant="outline" className="text-[11px]">
+                    {kecamatanSekolah === "semua"
+                      ? "Semua Kecamatan"
+                      : `Kec. ${FALLBACK_KECAMATAN.find((k) => k.id === kecamatanSekolah)?.nama || kecamatanSekolah}`}
+                  </Badge>
+                  {kelurahanSekolah !== "semua" && (
+                    <Badge variant="outline" className="text-[11px]">
+                      Kel. {availableKelurahanSekolahList.find((k) => k.id === kelurahanSekolah)?.nama || kelurahanSekolah}
+                    </Badge>
+                  )}
+                  {jenjangSekolah !== "semua" && (
+                    <Badge variant="secondary" className="text-[11px]">
+                      {OPSI_JENJANG_SEKOLAH.find((j) => j.value === jenjangSekolah)?.label || jenjangSekolah}
+                    </Badge>
+                  )}
+                  {searchSekolahText.trim() && (
+                    <Badge variant="secondary" className="text-[11px] font-mono">
+                      "{searchSekolahText.trim()}"
+                    </Badge>
+                  )}
+                </div>
 
-        {/* Selected Hierarchy Breadcrumb Preview */}
-        {filters.kecamatan && (
-          <div className="flex items-center gap-2 rounded-md bg-muted/40 p-2 text-xs text-muted-foreground">
-            <CheckCircle2 className="size-3.5 text-emerald-500 shrink-0" />
-            <span className="truncate">
-              Target Wilayah:{" "}
-              <strong className="text-foreground capitalize">
-                Kec. {activeKecamatan?.nama || filters.kecamatan.replace("-", " ")}
-              </strong>
-              {filters.kelurahan && (
-                <>
-                  {" "}
-                  &gt;{" "}
-                  <strong className="text-foreground">
-                    Kel. {activeKelurahan?.nama || filters.kelurahan}
-                  </strong>
-                </>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground self-end sm:self-auto">
+                  <span>Hasil:</span>
+                  <Badge variant="secondary" className="font-bold text-foreground">
+                    Ditemukan {filteredSekolahList.length} lembaga PAUD/PNF
+                  </Badge>
+                </div>
+              </div>
+
+              {isLoadingSekolah ? (
+                <div className="rounded-xl border border-border bg-card p-8 text-center">
+                  <Loader2 className="size-6 text-blue-600 animate-spin mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground">Memuat data satuan PAUD & PNF...</p>
+                </div>
+              ) : filteredSekolahList.length === 0 ? (
+                <div className="rounded-xl border border-border bg-card p-8 text-center">
+                  <School className="size-8 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-sm font-semibold text-foreground">Tidak Ada Lembaga PAUD/PNF Ditemukan</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Coba ubah kata kunci pencarian atau sesuaikan filter kecamatan & kelurahan.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[520px] overflow-y-auto pr-1">
+                  {filteredSekolahList.map((s) => (
+                    <div
+                      key={s.id}
+                      className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-4 transition-all hover:border-blue-500/50 hover:shadow-xs"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-2">
+                            {s.nama}
+                          </h4>
+                          <Badge
+                            variant={s.status === "NEGERI" ? "default" : "secondary"}
+                            className={`text-[9px] px-1.5 py-0 shrink-0 font-semibold ${
+                              s.status === "NEGERI" ? "bg-blue-600 text-white" : ""
+                            }`}
+                          >
+                            {s.status}
+                          </Badge>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <span className="font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded text-foreground">
+                            NPSN: {s.npsn}
+                          </span>
+                          <span>•</span>
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-blue-500/30 text-blue-700 dark:text-blue-300 bg-blue-500/5 font-semibold">
+                            {s.subJenjang || s.jenjang}
+                          </Badge>
+                          {s.naungan && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground">
+                              {s.naungan}
+                            </Badge>
+                          )}
+                        </div>
+
+                        <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground pt-1 border-t border-border/40">
+                          <Building className="size-3.5 shrink-0 text-muted-foreground/70 mt-0.5" />
+                          <span className="line-clamp-1">
+                            Kel. {s.kelurahan}, Kec. {s.kecamatan}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-3.5 pt-3 border-t border-border/50 flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-muted-foreground">Kanal Komunitas</span>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() =>
+                            handleOpenJoinModal({
+                              tipe: "SEKOLAH",
+                              id: s.id,
+                              nama: s.nama,
+                              detail: `Jenjang: ${s.subJenjang || s.jenjang}, Kel. ${s.kelurahan}`,
+                              kelurahan: s.kelurahan,
+                              kecamatan: s.kecamatan,
+                              jenjang: s.subJenjang || s.jenjang,
+                            })
+                          }
+                          className="bg-blue-600 hover:bg-blue-700 text-white text-[11px] h-7 px-3 gap-1 shadow-xs font-semibold rounded-lg"
+                        >
+                          <span>Gabung Kanal</span>
+                          <ArrowRight className="size-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
-              {filters.unit && (
-                <>
-                  {" "}
-                  &gt;{" "}
-                  <strong className="text-foreground">
-                    {selectedUnitObj?.nama || filters.unit}
-                  </strong>
-                </>
-              )}
-            </span>
-          </div>
-        )}
+            </div>
+          </TabsContent>
+
+          {/* ================================================================= */}
+          {/* TAB 3: KANAL OPD & DINAS */}
+          {/* ================================================================= */}
+          <TabsContent value="opd" className="space-y-6 focus-visible:outline-none">
+            {/* Box Filter Pencarian OPD */}
+            <div className="rounded-xl border border-border/70 bg-muted/20 p-4 sm:p-5 space-y-4">
+              <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex size-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <Building2 className="size-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">Kanal Organisasi Perangkat Daerah (OPD)</h3>
+                    <p className="text-[11px] text-muted-foreground">
+                      Terhubung dengan Dinas & Badan Resmi Pemerintah Kota Tegal
+                    </p>
+                  </div>
+                </div>
+
+                <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[11px]">
+                  Layanan Publik & Bantuan
+                </Badge>
+              </div>
+
+              {/* Form Input Pencarian & Tombol Tampilkan */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                <div className="sm:col-span-8 space-y-1.5">
+                  <label className="text-xs font-semibold text-foreground">Pencarian Nama Dinas / Program Layanan</label>
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Contoh: Kesehatan, Pendidikan, Sosial, Dukcapil, Satpol..."
+                      value={searchOpdText}
+                      onChange={(e) => setSearchOpdText(e.target.value)}
+                      className="pl-8 text-xs h-9 bg-background"
+                    />
+                    {searchOpdText && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchOpdText("")}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="sm:col-span-4 flex items-center gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => setShowOpdResults(true)}
+                    className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs h-9 gap-1.5 font-semibold shadow-xs"
+                  >
+                    <Eye className="size-3.5" />
+                    <span>Tampilkan Kanal OPD</span>
+                  </Button>
+
+                  {showOpdResults && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        setSearchOpdText("");
+                        setShowOpdResults(false);
+                      }}
+                      className="h-9 w-9 text-muted-foreground hover:text-foreground shrink-0"
+                      title="Reset Filter"
+                    >
+                      <RotateCcw className="size-3.5" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Area Hasil Daftar OPD */}
+            {!showOpdResults ? (
+              <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/10 p-8 text-center">
+                <div className="flex size-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 mb-3">
+                  <Landmark className="size-5" />
+                </div>
+                <h4 className="text-sm font-semibold text-foreground">Daftar OPD & Dinas Siap Dimuat</h4>
+                <p className="text-xs text-muted-foreground mt-1 max-w-md">
+                  Ketik nama dinas yang dicari atau klik langsung tombol{" "}
+                  <span className="font-semibold text-amber-600 dark:text-amber-400">"Tampilkan Kanal OPD"</span>{" "}
+                  untuk menampilkan seluruh instansi layanan publik di Kota Tegal.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between gap-2 bg-card p-3 rounded-lg border border-border/70">
+                  <span className="text-xs text-muted-foreground">Kanal Organisasi Perangkat Daerah Resmi</span>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span>Ditemukan:</span>
+                    <Badge variant="secondary" className="font-bold text-foreground">
+                      {filteredOpdList.length} OPD
+                    </Badge>
+                  </div>
+                </div>
+
+                {filteredOpdList.length === 0 ? (
+                  <div className="rounded-xl border border-border bg-card p-8 text-center">
+                    <Building2 className="size-8 text-muted-foreground/50 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-foreground">Tidak Ada OPD Ditemukan</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Coba sesuaikan kata kunci pencarian Anda.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[480px] overflow-y-auto pr-1">
+                    {filteredOpdList.map((opd) => (
+                      <div
+                        key={opd.id}
+                        className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-4 transition-all hover:border-amber-500/50 hover:shadow-xs"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className="text-xs font-bold text-foreground leading-tight">{opd.nama}</h4>
+                            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-bold shrink-0">
+                              {opd.kode}
+                            </Badge>
+                          </div>
+
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/30 text-amber-700 dark:text-amber-400">
+                            {opd.sektor}
+                          </Badge>
+
+                          <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
+                            {opd.deskripsi}
+                          </p>
+                        </div>
+
+                        <div className="mt-3.5 pt-3 border-t border-border/50 flex items-center justify-between gap-2">
+                          <span className="text-[10px] text-muted-foreground">Pemerintah Kota Tegal</span>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() =>
+                              handleOpenJoinModal({
+                                tipe: "OPD",
+                                id: opd.id,
+                                nama: opd.nama,
+                                detail: opd.deskripsi,
+                              })
+                            }
+                            className="bg-amber-600 hover:bg-amber-700 text-white text-[11px] h-7 px-3 gap-1 shadow-xs"
+                          >
+                            <span>Gabung</span>
+                            <ArrowRight className="size-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
 
-      {/* ============================================================================== */}
-      {/* MODAL 1: FORM GABUNG KANAL POSYANDU */}
-      {/* ============================================================================== */}
-      <Dialog open={isPosyanduModalOpen} onOpenChange={setIsPosyanduModalOpen}>
+      {/* ===================================================================== */}
+      {/* 6. MODAL GABUNG KANAL TERPADU (Multi-Peran & Konfirmasi Ringkasan) */}
+      {/* ===================================================================== */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-              <HeartPulse className="size-5" />
-              <DialogTitle>Form Gabung Kanal Posyandu</DialogTitle>
-            </div>
-            <DialogDescription className="text-xs">
-              Pilih Posyandu berdasarkan kelurahan domisili Anda untuk menerima jadwal imunisasi dan monitoring balita.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleJoinPosyandu} className="space-y-3.5 pt-1">
-            {/* 1. Kelurahan Domisili */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium">1. Kelurahan Domisili *</label>
-              <Select
-                value={posyanduForm.kelurahanId}
-                onValueChange={(val) =>
-                  setPosyanduForm({
-                    ...posyanduForm,
-                    kelurahanId: val || "",
-                    posyanduId: "",
-                  })
-                }
+            <div className="flex items-center gap-2">
+              <div
+                className={`flex size-8 items-center justify-center rounded-lg ${
+                  modalData?.tipe === "POSYANDU"
+                    ? "bg-emerald-500/10 text-emerald-600"
+                    : modalData?.tipe === "SEKOLAH"
+                    ? "bg-blue-500/10 text-blue-600"
+                    : "bg-amber-500/10 text-amber-600"
+                }`}
               >
-                <SelectTrigger className="w-full text-xs">
-                  <SelectValue placeholder="Pilih Kelurahan Domisili" />
-                </SelectTrigger>
-                <SelectContent>
-                  {all27Kelurahan.map((kel) => (
-                    <SelectItem key={kel.id} value={kel.id}>
-                      Kel. {kel.nama} ({kel.kecamatan})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* 2. Pilihan Posyandu */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium">2. Pilih Posyandu *</label>
-              <Select
-                value={posyanduForm.posyanduId}
-                onValueChange={(val) =>
-                  setPosyanduForm({ ...posyanduForm, posyanduId: val || "" })
-                }
-                disabled={!posyanduForm.kelurahanId}
-              >
-                <SelectTrigger className="w-full text-xs disabled:opacity-50">
-                  <SelectValue
-                    placeholder={
-                      posyanduForm.kelurahanId
-                        ? `Pilih Posyandu (${posyanduOptionsInSelectedKel.length})`
-                        : "Pilih kelurahan terlebih dahulu"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {posyanduOptionsInSelectedKel.map((pos) => (
-                    <SelectItem key={pos.id} value={pos.id}>
-                      {pos.nama}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* 3. Peran / Status */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium">3. Peran / Status Partisipasi</label>
-              <Select
-                value={posyanduForm.peran}
-                onValueChange={(val) =>
-                  setPosyanduForm({
-                    ...posyanduForm,
-                    peran: val || "Ibu Balita / Orang Tua",
-                  })
-                }
-              >
-                <SelectTrigger className="w-full text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Ibu Balita / Orang Tua">Ibu Balita / Orang Tua</SelectItem>
-                  <SelectItem value="Kader Posyandu">Kader Posyandu</SelectItem>
-                  <SelectItem value="Bidan / Tenaga Medis">Bidan / Tenaga Medis Kelurahan</SelectItem>
-                  <SelectItem value="Warga Pemerhati Gizi">Warga Pemerhati Kesehatan & Gizi</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <DialogFooter className="pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsPosyanduModalOpen(false)}
-                disabled={isSubmitting}
-                className="text-xs"
-              >
-                Batal
-              </Button>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isSubmitting || !posyanduForm.posyanduId}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5"
-              >
-                {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
-                <span>{isSubmitting ? "Menyimpan..." : "Gabung Kanal Posyandu"}</span>
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* ============================================================================== */}
-      {/* MODAL 2: FORM GABUNG KANAL SEKOLAH */}
-      {/* ============================================================================== */}
-      <Dialog open={isSekolahModalOpen} onOpenChange={setIsSekolahModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
-              <GraduationCap className="size-5" />
-              <DialogTitle>Form Gabung Kanal Sekolah</DialogTitle>
-            </div>
-            <DialogDescription className="text-xs">
-              Pilih Satuan Pendidikan (PAUD / TK / SD / SMP) di Kota Tegal untuk mendapatkan info & koordinasi akademik.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleJoinSekolah} className="space-y-3.5 pt-1">
-            {/* 1. Filter Tingkat / Jenjang */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium">1. Jenjang Pendidikan</label>
-              <Select
-                value={sekolahForm.jenjangFilter}
-                onValueChange={(val) =>
-                  setSekolahForm({
-                    ...sekolahForm,
-                    jenjangFilter: val || "SEMUA",
-                    sekolahId: "",
-                  })
-                }
-              >
-                <SelectTrigger className="w-full text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="SEMUA">Semua Jenjang (PAUD / TK / SD / SMP / SMA / SMK)</SelectItem>
-                  <SelectItem value="PAUD">PAUD (Pendidikan Anak Usia Dini)</SelectItem>
-                  <SelectItem value="TK">TK (Taman Kanak-Kanak)</SelectItem>
-                  <SelectItem value="RA">RA (Raudhatul Athfal)</SelectItem>
-                  <SelectItem value="SD">SD (Sekolah Dasar)</SelectItem>
-                  <SelectItem value="SMP">SMP (Sekolah Menengah Pertama)</SelectItem>
-                  <SelectItem value="SMA">SMA (Sekolah Menengah Atas)</SelectItem>
-                  <SelectItem value="SMK">SMK (Sekolah Menengah Kejuruan)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* 2. Pilihan Sekolah */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium">2. Pilih Satuan Pendidikan *</label>
-              <Select
-                value={sekolahForm.sekolahId}
-                onValueChange={(val) =>
-                  setSekolahForm({ ...sekolahForm, sekolahId: val || "" })
-                }
-              >
-                <SelectTrigger className="w-full text-xs">
-                  <SelectValue placeholder="Pilih Satuan Pendidikan Kota Tegal" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredSekolahOptions.map((sek) => (
-                    <SelectItem key={sek.id} value={sek.id}>
-                      [{sek.tingkat}] {sek.nama} ({sek.kelurahan})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* 3. Peran di Sekolah */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium">3. Peran / Status di Sekolah</label>
-              <Select
-                value={sekolahForm.peran}
-                onValueChange={(val) =>
-                  setSekolahForm({
-                    ...sekolahForm,
-                    peran: val || "Orang Tua / Wali Siswa",
-                  })
-                }
-              >
-                <SelectTrigger className="w-full text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Orang Tua / Wali Siswa">Orang Tua / Wali Siswa</SelectItem>
-                  <SelectItem value="Guru / Tenaga Pendidik">Guru / Tenaga Pendidik</SelectItem>
-                  <SelectItem value="Komite Sekolah / Mitra">Komite Sekolah / Mitra</SelectItem>
-                  <SelectItem value="Siswa / Alumni">Siswa / Alumni</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <DialogFooter className="pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setIsSekolahModalOpen(false)}
-                disabled={isSubmitting}
-                className="text-xs"
-              >
-                Batal
-              </Button>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isSubmitting || !sekolahForm.sekolahId}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs gap-1.5"
-              >
-                {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
-                <span>{isSubmitting ? "Menyimpan..." : "Gabung Kanal Sekolah"}</span>
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* ============================================================================== */}
-      {/* MODAL 3: FORM GABUNG KANAL OPD */}
-      {/* ============================================================================== */}
-      <Dialog open={isOpdModalOpen} onOpenChange={setIsOpdModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-              <Landmark className="size-5" />
-              <DialogTitle>Form Gabung Kanal OPD / Dinas</DialogTitle>
-            </div>
-            <DialogDescription className="text-xs">
-              Pilih Organisasi Perangkat Daerah / Dinas terkait untuk informasi program bantuan dan layanan publik.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleJoinOpd} className="space-y-3.5 pt-1">
-            {/* 1. Pilihan OPD */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium">1. Pilih OPD / Dinas Terkait *</label>
-              <Select
-                value={opdForm.opdId}
-                onValueChange={(val) =>
-                  setOpdForm({ ...opdForm, opdId: val || "" })
-                }
-              >
-                <SelectTrigger className="w-full text-xs">
-                  <SelectValue placeholder="Pilih Dinas / Instansi Kota Tegal" />
-                </SelectTrigger>
-                <SelectContent>
-                  {MASTER_OPD_TEGAL.map((opd) => (
-                    <SelectItem key={opd.id} value={opd.id}>
-                      [{opd.kode}] {opd.nama}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Deskripsi Singkat OPD Terpilih */}
-            {opdForm.opdId && (
-              <div className="rounded-md border border-amber-500/20 bg-amber-500/5 p-2.5 text-[11px] text-muted-foreground">
-                <span className="font-semibold text-foreground block mb-0.5">
-                  Fokus Sektor: {MASTER_OPD_TEGAL.find((o) => o.id === opdForm.opdId)?.sektor}
-                </span>
-                {MASTER_OPD_TEGAL.find((o) => o.id === opdForm.opdId)?.deskripsi}
+                {modalData?.tipe === "POSYANDU" && <HeartHandshake className="size-4" />}
+                {modalData?.tipe === "SEKOLAH" && <GraduationCap className="size-4" />}
+                {modalData?.tipe === "OPD" && <Building2 className="size-4" />}
               </div>
-            )}
+              <DialogTitle className="text-base font-bold">
+                Form Gabung Kanal {modalData?.tipe === "POSYANDU" ? "Posyandu" : modalData?.tipe === "SEKOLAH" ? "Sekolah" : "OPD"}
+              </DialogTitle>
+            </div>
+          </DialogHeader>
 
-            {/* 2. Peran / Kepentingan */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium">2. Peran / Kepentingan Warga</label>
-              <Select
-                value={opdForm.peran}
-                onValueChange={(val) =>
-                  setOpdForm({
-                    ...opdForm,
-                    peran: val || "Warga Penerima Layanan",
-                  })
-                }
-              >
-                <SelectTrigger className="w-full text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Warga Penerima Layanan">Warga Penerima Layanan Publik</SelectItem>
-                  <SelectItem value="Mitra Penggerak Komunitas">Mitra Penggerak Komunitas / Relawan</SelectItem>
-                  <SelectItem value="Pelaku Usaha / UMKM">Pelaku Usaha / UMKM Binaan</SelectItem>
-                  <SelectItem value="Pengawas & Aspirasi Publik">Pengawas & Penyampai Aspirasi Publik</SelectItem>
-                </SelectContent>
-              </Select>
+          <form onSubmit={handleSubmitJoin} className="space-y-4 pt-1">
+            {/* Teks Ringkasan Lokasi / Kanal */}
+            <div
+              className={`rounded-xl border p-3.5 space-y-1 ${
+                modalData?.tipe === "POSYANDU"
+                  ? "border-emerald-500/30 bg-emerald-500/5"
+                  : modalData?.tipe === "SEKOLAH"
+                  ? "border-blue-500/30 bg-blue-500/5"
+                  : "border-amber-500/30 bg-amber-500/5"
+              }`}
+            >
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                <CheckCircle2
+                  className={`size-3.5 ${
+                    modalData?.tipe === "POSYANDU"
+                      ? "text-emerald-600"
+                      : modalData?.tipe === "SEKOLAH"
+                      ? "text-blue-600"
+                      : "text-amber-600"
+                  }`}
+                />
+                <span>Konfirmasi Pilihan Kanal:</span>
+              </div>
+
+              <p className="text-xs text-foreground font-medium leading-snug">
+                {modalData?.tipe === "POSYANDU" && (
+                  <>
+                    Anda Memilih Bergabung Ke Posyandu:{" "}
+                    <strong className="text-emerald-700 dark:text-emerald-300">{modalData.nama}</strong>, Kel.{" "}
+                    {modalData.kelurahan}, Kec. {modalData.kecamatan}, Kota Tegal
+                  </>
+                )}
+                {modalData?.tipe === "SEKOLAH" && (
+                  <>
+                    Anda Memilih Bergabung Ke Sekolah:{" "}
+                    <strong className="text-blue-700 dark:text-blue-300">{modalData.nama}</strong>, {modalData.detail}
+                  </>
+                )}
+                {modalData?.tipe === "OPD" && (
+                  <>
+                    Anda Memilih Terhubung dengan:{" "}
+                    <strong className="text-amber-700 dark:text-amber-300">{modalData.nama}</strong>
+                  </>
+                )}
+              </p>
+            </div>
+
+            {/* Checkbox Multi-Peran */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <UserCheck className="size-3.5 text-muted-foreground" />
+                  <span>Tentukan Peran Anda (Bisa Pilih Lebih Dari Satu):</span>
+                </label>
+                <span className="text-[10px] text-muted-foreground font-medium">
+                  {selectedPeran.length} peran dipilih
+                </span>
+              </div>
+
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {(modalData?.tipe === "POSYANDU"
+                  ? PERAN_POSYANDU_OPTIONS
+                  : modalData?.tipe === "SEKOLAH"
+                  ? PERAN_SEKOLAH_OPTIONS
+                  : PERAN_OPD_OPTIONS
+                ).map((role) => {
+                  const isChecked = selectedPeran.includes(role.id);
+                  const themeClasses =
+                    modalData?.tipe === "POSYANDU"
+                      ? isChecked
+                        ? "border-emerald-500 bg-emerald-500/10 shadow-2xs ring-1 ring-emerald-500/30"
+                        : "border-border/70 bg-card hover:border-border hover:bg-muted/40"
+                      : modalData?.tipe === "SEKOLAH"
+                      ? isChecked
+                        ? "border-blue-500 bg-blue-500/10 shadow-2xs ring-1 ring-blue-500/30"
+                        : "border-border/70 bg-card hover:border-border hover:bg-muted/40"
+                      : isChecked
+                      ? "border-amber-500 bg-amber-500/10 shadow-2xs ring-1 ring-amber-500/30"
+                      : "border-border/70 bg-card hover:border-border hover:bg-muted/40";
+
+                  const checkBtnClasses =
+                    modalData?.tipe === "POSYANDU"
+                      ? isChecked
+                        ? "border-emerald-600 bg-emerald-600 text-white"
+                        : "border-muted-foreground/40 bg-background"
+                      : modalData?.tipe === "SEKOLAH"
+                      ? isChecked
+                        ? "border-blue-600 bg-blue-600 text-white"
+                        : "border-muted-foreground/40 bg-background"
+                      : isChecked
+                      ? "border-amber-600 bg-amber-600 text-white"
+                      : "border-muted-foreground/40 bg-background";
+
+                  return (
+                    <div
+                      key={role.id}
+                      role="checkbox"
+                      aria-checked={isChecked}
+                      tabIndex={0}
+                      onClick={() => handleTogglePeran(role.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === " " || e.key === "Enter") {
+                          e.preventDefault();
+                          handleTogglePeran(role.id);
+                        }
+                      }}
+                      className={`flex items-start gap-2.5 rounded-lg border p-2.5 cursor-pointer transition-all duration-150 select-none ${themeClasses}`}
+                    >
+                      <div className={`flex size-4.5 items-center justify-center rounded border transition-colors shrink-0 mt-0.5 ${checkBtnClasses}`}>
+                        {isChecked && <Check className="size-3 stroke-[3]" />}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-xs font-semibold leading-tight text-foreground">
+                            {role.label}
+                          </span>
+                          <Badge variant="secondary" className="text-[9px] px-1 py-0 font-normal shrink-0">
+                            {role.badge}
+                          </Badge>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{role.desc}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <DialogFooter className="pt-2">
@@ -1576,7 +1956,7 @@ export function CardKanalDiscovery() {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setIsOpdModalOpen(false)}
+                onClick={() => setIsModalOpen(false)}
                 disabled={isSubmitting}
                 className="text-xs"
               >
@@ -1585,11 +1965,18 @@ export function CardKanalDiscovery() {
               <Button
                 type="submit"
                 size="sm"
-                disabled={isSubmitting || !opdForm.opdId}
-                className="bg-amber-600 hover:bg-amber-700 text-white text-xs gap-1.5"
+                disabled={isSubmitting || selectedPeran.length === 0}
+                className={`text-white text-xs gap-1.5 shadow-xs ${
+                  modalData?.tipe === "POSYANDU"
+                    ? "bg-emerald-600 hover:bg-emerald-700"
+                    : modalData?.tipe === "SEKOLAH"
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "bg-amber-600 hover:bg-amber-700"
+                }`}
               >
                 {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
-                <span>{isSubmitting ? "Menyimpan..." : "Gabung Kanal OPD"}</span>
+                <span>{isSubmitting ? "Menyimpan..." : "Gabung Kanal"}</span>
+                {!isSubmitting && <ArrowRight className="size-3.5" />}
               </Button>
             </DialogFooter>
           </form>
@@ -1598,3 +1985,16 @@ export function CardKanalDiscovery() {
     </Card>
   );
 }
+
+// Backward Compatibility Named Exports
+export function CardPosyanduDiscovery() {
+  return <CardKanalDiscovery />;
+}
+export function CardSekolahDiscovery() {
+  return <CardKanalDiscovery />;
+}
+export function CardOpdDiscovery() {
+  return <CardKanalDiscovery />;
+}
+
+export default CardKanalDiscovery;

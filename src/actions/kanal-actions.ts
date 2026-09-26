@@ -10,7 +10,7 @@ export interface JoinKanalInput {
   kanalId: string;
   kanalNama: string;
   tipeKanal: KanalTipe;
-  peran?: string;
+  peran?: string | string[];
   metadata?: Record<string, unknown>;
 }
 
@@ -49,13 +49,20 @@ export async function joinKanalAction(
       };
     }
 
+    const formattedPeran = Array.isArray(input.peran)
+      ? input.peran.filter(Boolean).join(", ")
+      : input.peran || "Anggota";
+
     const payload = {
       user_id: targetUserId,
       kanal_id: input.kanalId,
       kanal_nama: input.kanalNama,
       tipe_kanal: input.tipeKanal,
-      peran: input.peran || "Anggota",
-      metadata: input.metadata || {},
+      peran: formattedPeran || "Anggota",
+      metadata: {
+        ...(input.metadata || {}),
+        peran_array: Array.isArray(input.peran) ? input.peran : [formattedPeran],
+      },
       updated_at: new Date().toISOString(),
     };
 
