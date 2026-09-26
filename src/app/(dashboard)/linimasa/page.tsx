@@ -20,29 +20,29 @@ function LinimasaContent() {
     <div className="min-h-screen bg-muted/20 p-4 md:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header Bar */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3.5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <Layers className="size-3.5" />
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground font-medium mb-1.5">
+              <Layers className="size-4 text-primary" />
               <span>Kota Tegal</span>
               <span>/</span>
-              <span className="font-semibold text-foreground">Linimasa Warga</span>
+              <span className="font-bold text-foreground">Linimasa Warga</span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground">
               Dashboard Linimasa Terpadu
             </h1>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Monitoring status identitas domisili kependudukan, kanal komunitas, dan statistik partisipasi warga.
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 leading-relaxed">
+              Monitoring status identitas domisili kependudukan, kanal komunitas, dan statistik partisipasi warga Kota Tegal.
             </p>
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <Badge
               variant="outline"
-              className="border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 gap-1.5 py-1 px-2.5 text-xs font-medium"
+              className="border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 gap-1.5 py-1.5 px-3.5 text-xs sm:text-sm font-semibold shadow-2xs"
             >
-              <Radio className="size-3 animate-pulse text-emerald-500" />
-              Realtime Active
+              <Radio className="size-3.5 animate-pulse text-emerald-500" />
+              Realtime Aktif
             </Badge>
           </div>
         </div>

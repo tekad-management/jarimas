@@ -266,29 +266,29 @@ export function CardRealtimeFeed() {
 
   return (
     <Card className="border border-border/80 bg-card shadow-xs">
-      <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <Database className="size-4.5" />
+      <CardHeader className="p-5 sm:p-6 pb-3 sm:pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex size-11 sm:size-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shrink-0">
+              <Database className="size-6" />
             </div>
             <div>
-              <CardTitle className="text-base font-semibold">
+              <CardTitle className="text-lg sm:text-xl font-bold text-foreground">
                 Feed Realtime Data Warga
               </CardTitle>
-              <CardDescription className="text-xs">
+              <CardDescription className="text-sm sm:text-base text-muted-foreground mt-0.5">
                 10 pendaftaran akun warga & data terbaru yang tersinkronisasi langsung via Supabase Realtime
               </CardDescription>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <Badge
               variant="outline"
-              className="border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs gap-1.5 py-0.5 px-2.5"
+              className="border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-semibold gap-1.5 py-1.5 px-3 shadow-2xs"
             >
-              <Radio className="size-3 animate-pulse text-emerald-500" />
-              <span>Realtime Active</span>
+              <Radio className="size-3.5 animate-pulse text-emerald-500" />
+              <span>Realtime Aktif</span>
             </Badge>
 
             <Button
@@ -299,20 +299,20 @@ export function CardRealtimeFeed() {
                 toast.info("Memperbarui feed warga realtime...");
               }}
               disabled={isLoading || isRefetching}
-              className="gap-1.5 text-xs h-8"
+              className="gap-2 text-xs sm:text-sm h-10 px-4 font-semibold"
             >
-              <RefreshCw className={`size-3.5 ${isRefetching ? "animate-spin" : ""}`} />
+              <RefreshCw className={`size-4 ${isRefetching ? "animate-spin" : ""}`} />
               <span>Refresh</span>
             </Button>
           </div>
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex items-center gap-1.5 pt-2 border-t border-border/50">
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-border/50">
           <button
             type="button"
             onClick={() => setFilterType("ALL")}
-            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
+            className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all ${
               filterType === "ALL"
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -323,7 +323,7 @@ export function CardRealtimeFeed() {
           <button
             type="button"
             onClick={() => setFilterType("USERS")}
-            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
+            className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all ${
               filterType === "USERS"
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -334,7 +334,7 @@ export function CardRealtimeFeed() {
           <button
             type="button"
             onClick={() => setFilterType("WARGA")}
-            className={`rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
+            className={`rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all ${
               filterType === "WARGA"
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-muted/50 text-muted-foreground hover:text-foreground"
@@ -345,79 +345,79 @@ export function CardRealtimeFeed() {
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className="p-5 sm:p-6 pt-0 space-y-3.5">
         {isLoading ? (
-          <div className="space-y-2.5 py-2">
+          <div className="space-y-3 py-2">
             {[1, 2, 3, 4].map((n) => (
               <div
                 key={n}
-                className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 p-3"
+                className="flex items-center justify-between rounded-xl border border-border/60 bg-muted/20 p-4"
               >
-                <div className="flex items-center gap-3">
-                  <Skeleton className="size-9 rounded-full" />
-                  <div className="space-y-1.5">
-                    <Skeleton className="h-4 w-40" />
-                    <Skeleton className="h-3 w-56" />
+                <div className="flex items-center gap-3.5">
+                  <Skeleton className="size-11 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-48" />
+                    <Skeleton className="h-4 w-64" />
                   </div>
                 </div>
-                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-7 w-24 rounded-full" />
               </div>
             ))}
           </div>
         ) : filteredFeed.length > 0 ? (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {filteredFeed.map((item) => (
               <div
                 key={item.id}
-                className={`group relative flex flex-col gap-2 rounded-xl border p-3 transition-all duration-300 sm:flex-row sm:items-center sm:justify-between ${
+                className={`group relative flex flex-col gap-2.5 rounded-xl sm:rounded-2xl border p-4 transition-all duration-200 sm:flex-row sm:items-center sm:justify-between shadow-2xs ${
                   item.isNew
-                    ? "border-emerald-500/50 bg-emerald-500/10 shadow-xs ring-1 ring-emerald-500/30 animate-in fade-in slide-in-from-top-2"
-                    : "border-border/60 bg-background/60 hover:border-border hover:bg-muted/30"
+                    ? "border-emerald-500/50 bg-emerald-500/10 ring-1 ring-emerald-500/30 animate-in fade-in slide-in-from-top-2"
+                    : "border-border/70 bg-background/70 hover:border-border hover:bg-muted/30"
                 }`}
               >
                 {/* Left Side: Avatar & Information */}
-                <div className="flex items-start gap-3 min-w-0">
+                <div className="flex items-start gap-3.5 min-w-0">
                   <div
-                    className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${
+                    className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${
                       item.source === "users"
                         ? "bg-blue-500/15 text-blue-600 dark:text-blue-400"
                         : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
                     }`}
                   >
                     {item.source === "users" ? (
-                      <UserCheck className="size-4.5" />
+                      <UserCheck className="size-5.5" />
                     ) : (
-                      <Baby className="size-4.5" />
+                      <Baby className="size-5.5" />
                     )}
                   </div>
 
-                  <div className="min-w-0 flex-1 space-y-0.5">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="font-semibold text-xs text-foreground truncate">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold text-sm sm:text-base text-foreground truncate">
                         {item.nama}
                       </span>
                       {item.subTitle && (
-                        <span className="text-[11px] text-muted-foreground truncate">
+                        <span className="text-xs sm:text-sm text-muted-foreground truncate font-normal">
                           {item.subTitle}
                         </span>
                       )}
                       {item.isNew && (
-                        <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-[10px] px-1.5 py-0 gap-1 animate-pulse">
-                          <Sparkles className="size-2.5" />
+                        <Badge className="bg-emerald-600 hover:bg-emerald-600 text-white text-xs px-2 py-0.5 gap-1 animate-pulse font-bold">
+                          <Sparkles className="size-3" />
                           Terbaru
                         </Badge>
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="size-3 text-muted-foreground/70 shrink-0" />
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <MapPin className="size-3.5 text-muted-foreground/80 shrink-0" />
                         <span className="truncate">{item.wilayah}</span>
                       </span>
                       {item.alamatDetail && (
                         <>
                           <span>•</span>
-                          <span className="text-muted-foreground/90 truncate">
+                          <span className="text-muted-foreground/90 truncate font-normal">
                             {item.alamatDetail}
                           </span>
                         </>
@@ -427,16 +427,16 @@ export function CardRealtimeFeed() {
                 </div>
 
                 {/* Right Side: Badges & Relative Timestamp */}
-                <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 pt-1 sm:pt-0 border-t border-border/40 sm:border-0">
+                <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-2 sm:pt-0 border-t border-border/40 sm:border-0">
                   <Badge
                     variant={item.source === "users" ? "outline" : "secondary"}
-                    className="text-[10px] font-normal"
+                    className="text-xs sm:text-sm font-semibold py-1 px-3"
                   >
                     {item.badgeLabel}
                   </Badge>
 
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <Clock className="size-3 text-muted-foreground/70" />
+                  <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground font-medium">
+                    <Clock className="size-3.5 text-muted-foreground/70" />
                     <span>{item.waktu}</span>
                   </div>
                 </div>
@@ -444,14 +444,14 @@ export function CardRealtimeFeed() {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 p-8 text-center bg-muted/10">
-            <div className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground mb-2">
-              <UserPlus className="size-5" />
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 p-8 text-center bg-muted/10">
+            <div className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground mb-3">
+              <UserPlus className="size-6" />
             </div>
-            <p className="text-sm font-medium text-foreground">
+            <p className="text-base font-bold text-foreground">
               Belum ada aktivitas warga terdaftar
             </p>
-            <p className="text-xs text-muted-foreground max-w-sm mt-0.5">
+            <p className="text-sm text-muted-foreground max-w-sm mt-1">
               Pendaftaran warga baru melalui formulir registrasi akan otomatis muncul di feed ini secara realtime.
             </p>
           </div>

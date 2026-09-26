@@ -360,18 +360,18 @@ export function CardIdentityStatus({
 
   return (
     <Card className="w-full border border-border/80 bg-card shadow-xs">
-      <CardHeader className="p-4 sm:p-6 pb-3 sm:pb-4">
+      <CardHeader className="p-5 sm:p-6 pb-3 sm:pb-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
-              <Layers className="size-5" />
+          <div className="flex items-center gap-3.5">
+            <div className="flex size-11 sm:size-12 items-center justify-center rounded-xl bg-primary/10 text-primary shrink-0">
+              <Layers className="size-6" />
             </div>
             <div>
-              <CardTitle className="text-base sm:text-lg font-semibold text-foreground">
-                Informasi Grup dan Kanal Pengguna
+              <CardTitle className="text-lg sm:text-xl font-bold text-foreground">
+                Informasi Grup & Kanal Pengguna
               </CardTitle>
-              <CardDescription className="text-xs sm:text-sm text-muted-foreground">
-                grup dan kanal dimana pengguna telah bergabung
+              <CardDescription className="text-sm sm:text-base text-muted-foreground mt-0.5">
+                Grup dan kanal komunitas dimana Anda telah terdaftar aktif
               </CardDescription>
             </div>
           </div>
@@ -379,34 +379,34 @@ export function CardIdentityStatus({
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
-              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs gap-1.5 py-1 px-3"
+              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm gap-1.5 py-1.5 px-3.5 font-semibold shadow-2xs"
             >
-              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>Terdaftar di {kota}</span>
             </Badge>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="p-4 sm:p-6 pt-0 space-y-5">
+      <CardContent className="p-5 sm:p-6 pt-0 space-y-6">
         {/* ============================================================================== */}
         {/* 1. SEKSI GRUP TEMPAT PENGGUNA TELAH TERDAFTAR (BERBASIS ALAMAT KK) */}
         {/* ============================================================================== */}
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Users className="size-4 text-primary" />
-              <h3 className="text-xs sm:text-sm font-semibold text-foreground">
-                Grup tempat Pengguna telah terdaftar
+            <div className="flex items-center gap-2.5">
+              <Users className="size-4.5 text-primary" />
+              <h3 className="text-sm sm:text-base font-bold text-foreground">
+                Grup Wilayah Terdaftar
               </h3>
             </div>
-            <Badge variant="secondary" className="text-[11px] font-normal">
+            <Badge variant="secondary" className="text-xs sm:text-sm font-medium py-1 px-2.5">
               {isKkLuarKota ? "Berbasis Domisili" : "Berbasis Alamat KK"}
             </Badge>
           </div>
 
           {/* 5-Column Responsive Button Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             {kkGroupSteps.map((step) => {
               const Icon = step.icon;
 
@@ -415,25 +415,25 @@ export function CardIdentityStatus({
                   <TooltipTrigger>
                     <Link
                       href={step.href}
-                      className="group flex flex-col items-start justify-between rounded-xl border border-border/80 bg-muted/30 p-3 text-left transition-all duration-150 hover:border-primary/60 hover:bg-primary/5 hover:shadow-xs active:scale-[0.98] w-full cursor-pointer min-h-[72px]"
+                      className="group flex flex-col items-start justify-between rounded-xl sm:rounded-2xl border border-border/80 bg-muted/30 p-3.5 sm:p-4 text-left transition-all duration-150 hover:border-primary/60 hover:bg-primary/5 hover:shadow-xs active:scale-[0.98] w-full cursor-pointer min-h-[84px]"
                     >
                       <div className="flex w-full items-center justify-between">
-                        <span className="text-[11px] font-medium text-muted-foreground group-hover:text-primary transition-colors">
+                        <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">
                           {step.step}
                         </span>
-                        <Icon className="size-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <Icon className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
-                      <div className="mt-1 flex w-full items-center justify-between">
-                        <span className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                      <div className="mt-2 flex w-full items-center justify-between">
+                        <span className="text-sm sm:text-base font-bold text-foreground group-hover:text-primary transition-colors truncate">
                           {step.value}
                         </span>
-                        <ArrowUpRight className="size-3 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-all shrink-0 ml-1" />
+                        <ArrowUpRight className="size-3.5 text-muted-foreground/40 opacity-0 group-hover:opacity-100 transition-all shrink-0 ml-1" />
                       </div>
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">
+                  <TooltipContent side="top" className="text-xs sm:text-sm">
                     <p className="font-medium">{step.desc}</p>
-                    <p className="text-[10px] text-muted-foreground">Buka rute {step.href}</p>
+                    <p className="text-xs text-muted-foreground">Buka rute {step.href}</p>
                   </TooltipContent>
                 </Tooltip>
               );
@@ -445,20 +445,20 @@ export function CardIdentityStatus({
         {/* 1B. SEKSI GRUP DOMISILI (JIKA ALAMAT DOMISILI BERBEDA DENGAN KK) */}
         {/* ============================================================================== */}
         {showSeparateDomisiliGroup && domisiliGroupSteps.length > 0 && (
-          <div className="space-y-2.5 pt-1">
+          <div className="space-y-3 pt-1">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Home className="size-4 text-cyan-600 dark:text-cyan-400" />
-                <h3 className="text-xs sm:text-sm font-semibold text-foreground">
+              <div className="flex items-center gap-2.5">
+                <Home className="size-4.5 text-cyan-600 dark:text-cyan-400" />
+                <h3 className="text-sm sm:text-base font-bold text-foreground">
                   Grup Domisili
                 </h3>
               </div>
-              <Badge variant="outline" className="text-[11px] text-cyan-700 dark:text-cyan-300 border-cyan-500/30 bg-cyan-500/10 py-0.5 px-2">
+              <Badge variant="outline" className="text-xs sm:text-sm font-semibold text-cyan-700 dark:text-cyan-300 border-cyan-500/30 bg-cyan-500/10 py-1 px-3">
                 Alamat Domisili Berbeda
               </Badge>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {domisiliGroupSteps.map((step) => {
                 const Icon = step.icon;
 
@@ -467,25 +467,25 @@ export function CardIdentityStatus({
                     <TooltipTrigger>
                       <Link
                         href={step.href}
-                        className="group flex flex-col items-start justify-between rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-3 text-left transition-all duration-150 hover:border-cyan-500 hover:bg-cyan-500/15 hover:shadow-xs active:scale-[0.98] w-full cursor-pointer min-h-[72px]"
+                        className="group flex flex-col items-start justify-between rounded-xl sm:rounded-2xl border border-cyan-500/30 bg-cyan-500/5 p-3.5 sm:p-4 text-left transition-all duration-150 hover:border-cyan-500 hover:bg-cyan-500/15 hover:shadow-xs active:scale-[0.98] w-full cursor-pointer min-h-[84px]"
                       >
                         <div className="flex w-full items-center justify-between">
-                          <span className="text-[11px] font-medium text-cyan-800/80 dark:text-cyan-300/80">
+                          <span className="text-xs font-semibold text-cyan-800/80 dark:text-cyan-300/80">
                             {step.step}
                           </span>
-                          <Icon className="size-3.5 text-cyan-600 dark:text-cyan-400" />
+                          <Icon className="size-4 text-cyan-600 dark:text-cyan-400" />
                         </div>
-                        <div className="mt-1 flex w-full items-center justify-between">
-                          <span className="text-xs sm:text-sm font-bold text-foreground group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors truncate">
+                        <div className="mt-2 flex w-full items-center justify-between">
+                          <span className="text-sm sm:text-base font-bold text-foreground group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors truncate">
                             {step.value}
                           </span>
-                          <ArrowUpRight className="size-3 text-cyan-600/50 opacity-0 group-hover:opacity-100 transition-all shrink-0 ml-1" />
+                          <ArrowUpRight className="size-3.5 text-cyan-600/50 opacity-0 group-hover:opacity-100 transition-all shrink-0 ml-1" />
                         </div>
                       </Link>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs">
+                    <TooltipContent side="top" className="text-xs sm:text-sm">
                       <p className="font-medium">{step.desc}</p>
-                      <p className="text-[10px] text-muted-foreground">Buka rute {step.href}</p>
+                      <p className="text-xs text-muted-foreground">Buka rute {step.href}</p>
                     </TooltipContent>
                   </Tooltip>
                 );
@@ -499,68 +499,68 @@ export function CardIdentityStatus({
         {/* ============================================================================== */}
         {/* 2. SEKSI KANAL TERDAFTAR (3 KOLOM LEBAR PENUH: POSYANDU, SEKOLAH, OPD) */}
         {/* ============================================================================== */}
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Layers className="size-4 text-indigo-500" />
-              <h3 className="text-xs sm:text-sm font-semibold text-foreground">
+            <div className="flex items-center gap-2.5">
+              <Layers className="size-4.5 text-indigo-500" />
+              <h3 className="text-sm sm:text-base font-bold text-foreground">
                 Kanal Terdaftar
               </h3>
             </div>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-xs sm:text-sm text-muted-foreground font-medium">
               Posyandu, Satuan Pendidikan & OPD
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* A. Kanal Posyandu Terdaftar Card */}
-            <div className="flex flex-col justify-between rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3.5 space-y-2.5">
+            <div className="flex flex-col justify-between rounded-xl sm:rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 sm:p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shrink-0">
-                    <HeartPulse className="size-4" />
+                <div className="flex items-center gap-2.5">
+                  <div className="flex size-8 sm:size-9 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 shrink-0">
+                    <HeartPulse className="size-4.5 sm:size-5" />
                   </div>
-                  <span className="text-xs font-semibold text-foreground">
-                    Kanal Posyandu Terdaftar
+                  <span className="text-sm sm:text-base font-bold text-foreground">
+                    Kanal Posyandu
                   </span>
                 </div>
                 <Badge
                   variant="outline"
-                  className="text-[10px] border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                  className="text-xs sm:text-sm font-bold border-emerald-500/30 text-emerald-700 dark:text-emerald-300 py-0.5 px-2.5"
                 >
                   {posyanduMemberships.length}
                 </Badge>
               </div>
 
-              <div className="space-y-1.5 min-h-[42px] flex flex-col justify-center">
+              <div className="space-y-2 min-h-[48px] flex flex-col justify-center">
                 {posyanduMemberships.length > 0 ? (
                   posyanduMemberships.map((m: any) => (
                     <Tooltip key={m.id || m.kanal_id}>
                       <TooltipTrigger>
                         <Link
                           href={`/kanal/posyandu/${m.kanal_id}`}
-                          className="flex items-center justify-between rounded-lg border border-emerald-500/30 bg-background/90 px-2.5 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300 transition-all hover:bg-emerald-500/15 hover:border-emerald-500/60 active:scale-[0.98] group cursor-pointer w-full"
+                          className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-background/90 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 transition-all hover:bg-emerald-500/15 hover:border-emerald-500/60 active:scale-[0.98] group cursor-pointer w-full shadow-2xs"
                         >
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="size-1.5 rounded-full bg-emerald-500 shrink-0" />
-                            <span className="font-semibold truncate">{m.kanal_nama}</span>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="size-2 rounded-full bg-emerald-500 shrink-0" />
+                            <span className="font-bold truncate">{m.kanal_nama}</span>
                             {m.peran && (
-                              <span className="text-[10px] text-muted-foreground truncate">
+                              <span className="text-xs text-muted-foreground truncate">
                                 ({m.peran})
                               </span>
                             )}
                           </div>
-                          <ArrowUpRight className="size-3 opacity-60 group-hover:opacity-100 transition-transform shrink-0 ml-1" />
+                          <ArrowUpRight className="size-4 opacity-60 group-hover:opacity-100 transition-transform shrink-0 ml-1.5" />
                         </Link>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">
+                      <TooltipContent side="top" className="text-xs sm:text-sm">
                         <p>Buka rute /kanal/posyandu/{m.kanal_id}</p>
                       </TooltipContent>
                     </Tooltip>
                   ))
                 ) : (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-background/50 rounded-lg p-2 border border-border/50">
-                    <span className="size-2 rounded-full bg-muted-foreground/40" />
+                  <div className="flex items-center gap-2.5 text-xs sm:text-sm text-muted-foreground bg-background/60 rounded-xl p-3 border border-border/50">
+                    <span className="size-2 rounded-full bg-muted-foreground/40 shrink-0" />
                     <span>Belum Terdaftar di Posyandu</span>
                   </div>
                 )}
@@ -568,53 +568,53 @@ export function CardIdentityStatus({
             </div>
 
             {/* B. Kanal Sekolah Terdaftar Card */}
-            <div className="flex flex-col justify-between rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-3.5 space-y-2.5">
+            <div className="flex flex-col justify-between rounded-xl sm:rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 sm:p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shrink-0">
-                    <GraduationCap className="size-4" />
+                <div className="flex items-center gap-2.5">
+                  <div className="flex size-8 sm:size-9 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 shrink-0">
+                    <GraduationCap className="size-4.5 sm:size-5" />
                   </div>
-                  <span className="text-xs font-semibold text-foreground">
-                    Kanal Sekolah Terdaftar
+                  <span className="text-sm sm:text-base font-bold text-foreground">
+                    Kanal Sekolah / PAUD
                   </span>
                 </div>
                 <Badge
                   variant="outline"
-                  className="text-[10px] border-indigo-500/30 text-indigo-700 dark:text-indigo-300"
+                  className="text-xs sm:text-sm font-bold border-indigo-500/30 text-indigo-700 dark:text-indigo-300 py-0.5 px-2.5"
                 >
                   {sekolahMemberships.length}
                 </Badge>
               </div>
 
-              <div className="space-y-1.5 min-h-[42px] flex flex-col justify-center">
+              <div className="space-y-2 min-h-[48px] flex flex-col justify-center">
                 {sekolahMemberships.length > 0 ? (
                   sekolahMemberships.map((m: any) => (
                     <Tooltip key={m.id || m.kanal_id}>
                       <TooltipTrigger>
                         <Link
                           href={`/kanal/sekolah/${m.kanal_id}`}
-                          className="flex items-center justify-between rounded-lg border border-indigo-500/30 bg-background/90 px-2.5 py-1.5 text-xs font-medium text-indigo-700 dark:text-indigo-300 transition-all hover:bg-indigo-500/15 hover:border-indigo-500/60 active:scale-[0.98] group cursor-pointer w-full"
+                          className="flex items-center justify-between rounded-xl border border-indigo-500/30 bg-background/90 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-indigo-700 dark:text-indigo-300 transition-all hover:bg-indigo-500/15 hover:border-indigo-500/60 active:scale-[0.98] group cursor-pointer w-full shadow-2xs"
                         >
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="size-1.5 rounded-full bg-indigo-500 shrink-0" />
-                            <span className="font-semibold truncate">{m.kanal_nama}</span>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="size-2 rounded-full bg-indigo-500 shrink-0" />
+                            <span className="font-bold truncate">{m.kanal_nama}</span>
                             {m.peran && (
-                              <span className="text-[10px] text-muted-foreground truncate">
+                              <span className="text-xs text-muted-foreground truncate">
                                 ({m.peran})
                               </span>
                             )}
                           </div>
-                          <ArrowUpRight className="size-3 opacity-60 group-hover:opacity-100 transition-transform shrink-0 ml-1" />
+                          <ArrowUpRight className="size-4 opacity-60 group-hover:opacity-100 transition-transform shrink-0 ml-1.5" />
                         </Link>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">
+                      <TooltipContent side="top" className="text-xs sm:text-sm">
                         <p>Buka rute /kanal/sekolah/{m.kanal_id}</p>
                       </TooltipContent>
                     </Tooltip>
                   ))
                 ) : (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-background/50 rounded-lg p-2 border border-border/50">
-                    <span className="size-2 rounded-full bg-muted-foreground/40" />
+                  <div className="flex items-center gap-2.5 text-xs sm:text-sm text-muted-foreground bg-background/60 rounded-xl p-3 border border-border/50">
+                    <span className="size-2 rounded-full bg-muted-foreground/40 shrink-0" />
                     <span>Belum Terdaftar di Satuan Pendidikan</span>
                   </div>
                 )}
@@ -622,53 +622,53 @@ export function CardIdentityStatus({
             </div>
 
             {/* C. Kanal OPD Terdaftar Card */}
-            <div className="flex flex-col justify-between rounded-xl border border-amber-500/20 bg-amber-500/5 p-3.5 space-y-2.5">
+            <div className="flex flex-col justify-between rounded-xl sm:rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 sm:p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 shrink-0">
-                    <Landmark className="size-4" />
+                <div className="flex items-center gap-2.5">
+                  <div className="flex size-8 sm:size-9 items-center justify-center rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-400 shrink-0">
+                    <Landmark className="size-4.5 sm:size-5" />
                   </div>
-                  <span className="text-xs font-semibold text-foreground">
-                    Kanal OPD Terdaftar
+                  <span className="text-sm sm:text-base font-bold text-foreground">
+                    Kanal OPD / Dinas
                   </span>
                 </div>
                 <Badge
                   variant="outline"
-                  className="text-[10px] border-amber-500/30 text-amber-800 dark:text-amber-300"
+                  className="text-xs sm:text-sm font-bold border-amber-500/30 text-amber-800 dark:text-amber-300 py-0.5 px-2.5"
                 >
                   {opdMemberships.length}
                 </Badge>
               </div>
 
-              <div className="space-y-1.5 min-h-[42px] flex flex-col justify-center">
+              <div className="space-y-2 min-h-[48px] flex flex-col justify-center">
                 {opdMemberships.length > 0 ? (
                   opdMemberships.map((m: any) => (
                     <Tooltip key={m.id || m.kanal_id}>
                       <TooltipTrigger>
                         <Link
                           href={`/kanal/opd/${m.kanal_id}`}
-                          className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-background/90 px-2.5 py-1.5 text-xs font-medium text-amber-800 dark:text-amber-300 transition-all hover:bg-amber-500/15 hover:border-amber-500/60 active:scale-[0.98] group cursor-pointer w-full"
+                          className="flex items-center justify-between rounded-xl border border-amber-500/30 bg-background/90 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-amber-800 dark:text-amber-300 transition-all hover:bg-amber-500/15 hover:border-amber-500/60 active:scale-[0.98] group cursor-pointer w-full shadow-2xs"
                         >
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="size-1.5 rounded-full bg-amber-500 shrink-0" />
-                            <span className="font-semibold truncate">{m.kanal_nama}</span>
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="size-2 rounded-full bg-amber-500 shrink-0" />
+                            <span className="font-bold truncate">{m.kanal_nama}</span>
                             {m.peran && (
-                              <span className="text-[10px] text-muted-foreground truncate">
+                              <span className="text-xs text-muted-foreground truncate">
                                 ({m.peran})
                               </span>
                             )}
                           </div>
-                          <ArrowUpRight className="size-3 opacity-60 group-hover:opacity-100 transition-transform shrink-0 ml-1" />
+                          <ArrowUpRight className="size-4 opacity-60 group-hover:opacity-100 transition-transform shrink-0 ml-1.5" />
                         </Link>
                       </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">
+                      <TooltipContent side="top" className="text-xs sm:text-sm">
                         <p>Buka rute /kanal/opd/{m.kanal_id}</p>
                       </TooltipContent>
                     </Tooltip>
                   ))
                 ) : (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-background/50 rounded-lg p-2 border border-border/50">
-                    <span className="size-2 rounded-full bg-muted-foreground/40" />
+                  <div className="flex items-center gap-2.5 text-xs sm:text-sm text-muted-foreground bg-background/60 rounded-xl p-3 border border-border/50">
+                    <span className="size-2 rounded-full bg-muted-foreground/40 shrink-0" />
                     <span>Belum Terdaftar di OPD / Dinas</span>
                   </div>
                 )}
@@ -682,16 +682,16 @@ export function CardIdentityStatus({
         {/* ============================================================================== */}
         {/* 3. ALAMAT DOMISILI DETAIL (BAGIAN PALING BAWAH KARTU - LEBAR PENUH) */}
         {/* ============================================================================== */}
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-muted/30 p-3.5 text-xs">
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5">
-              <MapPin className="size-4.5" />
+        <div className="flex flex-wrap items-center justify-between gap-3.5 rounded-xl sm:rounded-2xl border border-border/70 bg-muted/40 p-4 sm:p-5">
+          <div className="flex items-start gap-3.5 min-w-0">
+            <div className="flex size-9 sm:size-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5">
+              <MapPin className="size-5" />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-muted-foreground font-semibold text-[11px] uppercase tracking-wider">
-                Alamat Domisili:
+              <span className="text-muted-foreground font-bold text-xs uppercase tracking-wider">
+                Alamat Domisili Terdaftar:
               </span>
-              <span className="font-semibold text-foreground text-xs sm:text-sm leading-relaxed break-words mt-0.5">
+              <span className="font-semibold text-foreground text-sm sm:text-base leading-relaxed break-words mt-1">
                 {alamatDetailAsli}
               </span>
             </div>
@@ -700,9 +700,9 @@ export function CardIdentityStatus({
           <div className="flex items-center gap-2 text-muted-foreground ml-auto shrink-0 self-start sm:self-auto">
             <Badge
               variant="outline"
-              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium py-1 px-2.5"
+              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-semibold py-1.5 px-3.5"
             >
-              Wilayah Terdaftar
+              Wilayah Terverifikasi
             </Badge>
           </div>
         </div>

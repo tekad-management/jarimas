@@ -213,37 +213,37 @@ export function CardStatistics({ isLoading: propLoading = false }: CardStatistic
 
   return (
     <Card className="border border-border/80 bg-card shadow-xs">
-      <CardHeader className="pb-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <BarChart3 className="size-4.5" />
+      <CardHeader className="p-5 sm:p-6 pb-3 sm:pb-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex size-11 sm:size-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shrink-0">
+              <BarChart3 className="size-6" />
             </div>
             <div>
-              <CardTitle className="text-base font-semibold">
+              <CardTitle className="text-lg sm:text-xl font-bold text-foreground">
                 Statistik Warga & Partisipasi Kanal
               </CardTitle>
-              <CardDescription className="text-xs">
+              <CardDescription className="text-sm sm:text-base text-muted-foreground mt-0.5">
                 Rekapitulasi riil data pengguna & keanggotaan kanal terintegrasi (Supabase)
               </CardDescription>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <Badge
               variant="outline"
-              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs gap-1 py-0.5"
+              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-semibold gap-1.5 py-1.5 px-3 shadow-2xs"
             >
-              <Database className="size-3" />
+              <Database className="size-3.5 text-emerald-600" />
               Live Supabase
             </Badge>
 
             {/* Toggle View Mode */}
-            <div className="flex items-center rounded-lg border border-border/60 bg-muted/40 p-0.5 text-[11px]">
+            <div className="flex items-center rounded-xl border border-border/70 bg-muted/50 p-1 text-xs sm:text-sm shadow-2xs">
               <button
                 type="button"
                 onClick={() => setActiveTab("ringkasan")}
-                className={`rounded-md px-2.5 py-1 font-medium transition-all ${
+                className={`rounded-lg px-3.5 py-1.5 font-semibold transition-all ${
                   activeTab === "ringkasan"
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -254,7 +254,7 @@ export function CardStatistics({ isLoading: propLoading = false }: CardStatistic
               <button
                 type="button"
                 onClick={() => setActiveTab("kecamatan")}
-                className={`rounded-md px-2.5 py-1 font-medium transition-all ${
+                className={`rounded-lg px-3.5 py-1.5 font-semibold transition-all ${
                   activeTab === "kecamatan"
                     ? "bg-background text-foreground shadow-xs"
                     : "text-muted-foreground hover:text-foreground"
@@ -267,83 +267,83 @@ export function CardStatistics({ isLoading: propLoading = false }: CardStatistic
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="p-5 sm:p-6 pt-0 space-y-5">
         {/* ============================================================================== */}
         {/* 4 KARTU METRIK RINGKAS RIIL SUPABASE */}
         {/* ============================================================================== */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
           {/* 1. Total Warga Bergabung */}
-          <div className="flex items-center gap-3 rounded-xl border border-blue-500/25 bg-blue-500/5 p-3 transition-all hover:bg-blue-500/10">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/20 text-blue-600 dark:text-blue-400">
-              <Users className="size-5" />
+          <div className="flex items-center gap-3.5 rounded-xl sm:rounded-2xl border border-blue-500/30 bg-blue-500/5 p-4 transition-all hover:bg-blue-500/10 shadow-2xs">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-blue-500/20 text-blue-600 dark:text-blue-400">
+              <Users className="size-6" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-muted-foreground truncate">
+              <p className="text-xs sm:text-sm font-semibold text-muted-foreground truncate">
                 Total Warga Bergabung
               </p>
-              <p className="text-xl font-bold tracking-tight text-foreground">
+              <p className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
                 {totalWarga.toLocaleString("id-ID")}{" "}
-                <span className="text-[11px] font-normal text-muted-foreground">Warga</span>
+                <span className="text-xs sm:text-sm font-normal text-muted-foreground">Warga</span>
               </p>
-              <p className="text-[10px] text-muted-foreground/80 truncate">
+              <p className="text-xs text-muted-foreground/90 truncate mt-0.5">
                 Pengguna terdaftar di database
               </p>
             </div>
           </div>
 
           {/* 2. Anggota Kanal Posyandu */}
-          <div className="flex items-center gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-3 transition-all hover:bg-emerald-500/10">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-              <HeartPulse className="size-5" />
+          <div className="flex items-center gap-3.5 rounded-xl sm:rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 transition-all hover:bg-emerald-500/10 shadow-2xs">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+              <HeartPulse className="size-6" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-muted-foreground truncate">
+              <p className="text-xs sm:text-sm font-semibold text-muted-foreground truncate">
                 Anggota Kanal Posyandu
               </p>
-              <p className="text-xl font-bold tracking-tight text-foreground">
+              <p className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
                 {totalPosyandu.toLocaleString("id-ID")}{" "}
-                <span className="text-[11px] font-normal text-muted-foreground">Anggota</span>
+                <span className="text-xs sm:text-sm font-normal text-muted-foreground">Anggota</span>
               </p>
-              <p className="text-[10px] text-muted-foreground/80 truncate">
+              <p className="text-xs text-muted-foreground/90 truncate mt-0.5">
                 Kanal Posyandu Kelurahan
               </p>
             </div>
           </div>
 
           {/* 3. Anggota Kanal Sekolah */}
-          <div className="flex items-center gap-3 rounded-xl border border-indigo-500/25 bg-indigo-500/5 p-3 transition-all hover:bg-indigo-500/10">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
-              <GraduationCap className="size-5" />
+          <div className="flex items-center gap-3.5 rounded-xl sm:rounded-2xl border border-indigo-500/30 bg-indigo-500/5 p-4 transition-all hover:bg-indigo-500/10 shadow-2xs">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-600 dark:text-indigo-400">
+              <GraduationCap className="size-6" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-muted-foreground truncate">
+              <p className="text-xs sm:text-sm font-semibold text-muted-foreground truncate">
                 Anggota Kanal Sekolah
               </p>
-              <p className="text-xl font-bold tracking-tight text-foreground">
+              <p className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
                 {totalSekolah.toLocaleString("id-ID")}{" "}
-                <span className="text-[11px] font-normal text-muted-foreground">Anggota</span>
+                <span className="text-xs sm:text-sm font-normal text-muted-foreground">Anggota</span>
               </p>
-              <p className="text-[10px] text-muted-foreground/80 truncate">
+              <p className="text-xs text-muted-foreground/90 truncate mt-0.5">
                 PAUD / TK / SD / SMP / SMK
               </p>
             </div>
           </div>
 
           {/* 4. Anggota Kanal OPD */}
-          <div className="flex items-center gap-3 rounded-xl border border-amber-500/25 bg-amber-500/5 p-3 transition-all hover:bg-amber-500/10">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/20 text-amber-600 dark:text-amber-400">
-              <Landmark className="size-5" />
+          <div className="flex items-center gap-3.5 rounded-xl sm:rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 transition-all hover:bg-amber-500/10 shadow-2xs">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400">
+              <Landmark className="size-6" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-muted-foreground truncate">
+              <p className="text-xs sm:text-sm font-semibold text-muted-foreground truncate">
                 Anggota Kanal OPD
               </p>
-              <p className="text-xl font-bold tracking-tight text-foreground">
+              <p className="text-2xl font-bold tracking-tight text-foreground mt-0.5">
                 {totalOpd.toLocaleString("id-ID")}{" "}
-                <span className="text-[11px] font-normal text-muted-foreground">Anggota</span>
+                <span className="text-xs sm:text-sm font-normal text-muted-foreground">Anggota</span>
               </p>
-              <p className="text-[10px] text-muted-foreground/80 truncate">
-                Dinas & Layanan Publik Kota Tegal
+              <p className="text-xs text-muted-foreground/90 truncate mt-0.5">
+                Dinas & Layanan Publik
               </p>
             </div>
           </div>
@@ -352,17 +352,17 @@ export function CardStatistics({ isLoading: propLoading = false }: CardStatistic
         {/* ============================================================================== */}
         {/* RECHARTS BAR CHART VISUALISASI DINAMIS */}
         {/* ============================================================================== */}
-        <div className="rounded-xl border border-border/70 bg-background/50 p-3 pt-4">
-          <div className="flex items-center justify-between pb-2 px-1">
+        <div className="rounded-xl sm:rounded-2xl border border-border/70 bg-background/60 p-4 sm:p-5 shadow-2xs">
+          <div className="flex items-center justify-between pb-3 px-1">
             <div className="flex items-center gap-2">
-              <TrendingUp className="size-4 text-primary" />
-              <span className="text-xs font-semibold text-foreground">
+              <TrendingUp className="size-5 text-primary" />
+              <span className="text-sm sm:text-base font-bold text-foreground">
                 {activeTab === "ringkasan"
                   ? "Komparasi Partisipasi 4 Kanal Utama"
                   : "Distribusi Partisipasi di 4 Kecamatan Kota Tegal"}
               </span>
             </div>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-xs sm:text-sm text-muted-foreground font-medium">
               Grafik Partisipasi Terkini
             </span>
           </div>

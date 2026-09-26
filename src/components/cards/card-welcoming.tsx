@@ -155,12 +155,12 @@ export function CardWelcoming({
     <Card className="w-full relative overflow-hidden border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 via-background to-teal-500/5 shadow-xs backdrop-blur-sm">
       <div className="absolute top-0 right-0 -mt-8 -mr-8 h-40 w-40 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
 
-      <CardHeader className="pb-3.5 p-4 sm:p-6">
+      <CardHeader className="pb-4 p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
-            <Avatar size="lg" className="ring-2 ring-emerald-500/30 size-13 sm:size-14 shrink-0">
+            <Avatar size="lg" className="ring-2 ring-emerald-500/30 size-14 sm:size-16 shrink-0 shadow-xs">
               {avatarUrl && <AvatarImage src={avatarUrl} alt={activeName} />}
-              <AvatarFallback className="bg-emerald-600 font-bold text-white text-base sm:text-lg">
+              <AvatarFallback className="bg-emerald-600 font-bold text-white text-lg sm:text-xl">
                 {initials || "W"}
               </AvatarFallback>
             </Avatar>
@@ -169,67 +169,67 @@ export function CardWelcoming({
               <div className="flex flex-wrap items-center gap-2">
                 <Badge
                   variant="outline"
-                  className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs"
+                  className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-semibold py-1 px-3"
                 >
-                  <Sparkles className="size-3 text-emerald-500" />
+                  <Sparkles className="size-3.5 text-emerald-600" />
                   jarimas.id
                 </Badge>
-                <Badge variant="secondary" className="text-xs font-normal">
+                <Badge variant="secondary" className="text-xs sm:text-sm font-medium py-1 px-3">
                   {activeRole}
                 </Badge>
               </div>
-              <CardTitle className="text-lg font-bold tracking-tight text-foreground sm:text-2xl mt-1.5 truncate">
+              <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-foreground mt-2 leading-tight">
                 Selamat Datang di <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-400">jarimas.id</span>, {activeName}!
               </CardTitle>
-              <CardDescription className="text-xs sm:text-sm mt-0.5 text-muted-foreground">
+              <CardDescription className="text-sm sm:text-base mt-1 text-muted-foreground font-normal leading-relaxed">
                 Sistem Pendataan Terpadu & Kanal Komunitas Kesejahteraan Warga Kota Tegal.
               </CardDescription>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 shrink-0 self-start sm:self-auto">
-            <span className="relative flex h-2 w-2">
+          <div className="flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300 shrink-0 self-start sm:self-auto shadow-2xs">
+            <span className="relative flex h-2.5 w-2.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
             </span>
             <span>Status: Aktif Terverifikasi</span>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6 pt-0">
+      <CardContent className="px-5 pb-5 sm:px-6 sm:pb-6 pt-0">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 pt-1">
-          <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/60 p-3 shadow-2xs">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <Calendar className="size-4.5" />
+          <div className="flex items-center gap-3.5 rounded-xl sm:rounded-2xl border border-border/70 bg-card/70 p-3.5 sm:p-4 shadow-2xs">
+            <div className="flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+              <Calendar className="size-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground font-medium">Hari & Tanggal</p>
-              <p className="truncate text-xs sm:text-sm font-semibold text-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">Hari & Tanggal</p>
+              <p className="truncate text-sm sm:text-base font-bold text-foreground mt-0.5">
                 {currentDate || "Memuat..."}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/60 p-3 shadow-2xs">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400">
-              <Clock className="size-4.5" />
+          <div className="flex items-center gap-3.5 rounded-xl sm:rounded-2xl border border-border/70 bg-card/70 p-3.5 sm:p-4 shadow-2xs">
+            <div className="flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-xl bg-teal-500/15 text-teal-700 dark:text-teal-400">
+              <Clock className="size-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground font-medium">Waktu Saat Ini</p>
-              <p className="truncate font-mono text-xs sm:text-sm font-semibold text-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">Waktu Saat Ini</p>
+              <p className="truncate font-mono text-sm sm:text-base font-bold text-foreground mt-0.5">
                 {currentTime ? `${currentTime} WIB` : "Memuat..."}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/60 p-3 shadow-2xs">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
-              <ShieldCheck className="size-4.5" />
+          <div className="flex items-center gap-3.5 rounded-xl sm:rounded-2xl border border-border/70 bg-card/70 p-3.5 sm:p-4 shadow-2xs">
+            <div className="flex size-10 sm:size-11 shrink-0 items-center justify-center rounded-xl bg-blue-500/15 text-blue-700 dark:text-blue-400">
+              <ShieldCheck className="size-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] text-muted-foreground font-medium">Koneksi Database</p>
-              <p className="truncate text-xs sm:text-sm font-semibold text-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">Koneksi Database</p>
+              <p className="truncate text-sm sm:text-base font-bold text-foreground mt-0.5">
                 Supabase Realtime Siap
               </p>
             </div>

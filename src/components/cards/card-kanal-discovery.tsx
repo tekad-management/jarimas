@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { joinKanalAction } from "@/actions/kanal-actions";
@@ -701,11 +701,25 @@ export const OPSI_JENJANG_SEKOLAH = [
 // ==============================================================================
 export function CardKanalDiscovery() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const supabase = createClient();
 
   // Tab State: "posyandu" | "sekolah" | "opd"
   const [activeTab, setActiveTab] = useState<string>("posyandu");
+
+  // Sync tab state with URL query param (?tab=posyandu / sekolah / opd)
+  useEffect(() => {
+    const tabParam = searchParams.get("tab") || searchParams.get("unit_type");
+    if (tabParam && ["posyandu", "sekolah", "opd"].includes(tabParam.toLowerCase())) {
+      setActiveTab(tabParam.toLowerCase());
+      if (tabParam.toLowerCase() === "posyandu") {
+        setShowPosyanduResults(true);
+      } else if (tabParam.toLowerCase() === "opd") {
+        setShowOpdResults(true);
+      }
+    }
+  }, [searchParams]);
 
   // --------------------------------------------------------------------------
   // STATE TAB 1: KANAL POSYANDU
@@ -1131,51 +1145,51 @@ export function CardKanalDiscovery() {
   };
 
   return (
-    <Card className="w-full border-border/80 bg-card/95 shadow-sm backdrop-blur-xs">
+    <Card className="w-full border-2 border-border/80 bg-card shadow-sm">
       {/* Header Utama */}
-      <CardHeader className="border-b border-border/50 pb-5">
-        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+      <CardHeader className="border-b border-border/60 p-5 sm:p-6 lg:p-8">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-1">
-              <Compass className="size-4" />
-              <span>Eksplorasi & Integrasi Terpadu</span>
+            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-400 mb-1.5">
+              <Compass className="size-4.5" />
+              <span>Eksplorasi & Integrasi Komunitas</span>
             </div>
-            <CardTitle className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+            <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-foreground">
               Kanal Discovery & Integrasi Komunitas
             </CardTitle>
-            <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Temukan dan bergabunglah dengan kanal Posyandu, Sekolah, dan OPD resmi Kota Tegal.
+            <CardDescription className="text-sm sm:text-base text-slate-700 dark:text-slate-300 font-medium mt-1">
+              Temukan dan bergabunglah dengan kanal Posyandu, Satuan PAUD & PNF, serta OPD resmi se-Kota Tegal.
             </CardDescription>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="p-4 sm:p-6">
+      <CardContent className="p-4 sm:p-6 lg:p-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
           {/* Tabbed Navigation Bar */}
-          <TabsList className="grid w-full grid-cols-3 h-12 bg-muted/60 p-1.5 rounded-xl">
+          <TabsList className="grid w-full grid-cols-3 h-14 sm:h-16 bg-muted/70 p-1.5 sm:p-2 rounded-2xl gap-1.5">
             <TabsTrigger
               value="posyandu"
-              className="gap-2 text-xs sm:text-sm py-2 data-[state=active]:bg-background data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-400 data-[state=active]:shadow-xs transition-all"
+              className="gap-2 text-xs sm:text-base py-2.5 h-full rounded-xl data-[state=active]:bg-background data-[state=active]:text-emerald-700 dark:data-[state=active]:text-emerald-300 data-[state=active]:shadow-sm font-bold transition-all"
             >
-              <HeartHandshake className="size-4" />
-              <span className="font-semibold">Kanal Posyandu</span>
+              <HeartHandshake className="size-4.5 sm:size-5 text-emerald-600 dark:text-emerald-400" />
+              <span>Kanal Posyandu</span>
             </TabsTrigger>
 
             <TabsTrigger
               value="sekolah"
-              className="gap-2 text-xs sm:text-sm py-2 data-[state=active]:bg-background data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-400 data-[state=active]:shadow-xs transition-all"
+              className="gap-2 text-xs sm:text-base py-2.5 h-full rounded-xl data-[state=active]:bg-background data-[state=active]:text-blue-700 dark:data-[state=active]:text-blue-300 data-[state=active]:shadow-sm font-bold transition-all"
             >
-              <GraduationCap className="size-4" />
-              <span className="font-semibold">Kanal Sekolah</span>
+              <GraduationCap className="size-4.5 sm:size-5 text-blue-600 dark:text-blue-400" />
+              <span>PAUD & PNF</span>
             </TabsTrigger>
 
             <TabsTrigger
               value="opd"
-              className="gap-2 text-xs sm:text-sm py-2 data-[state=active]:bg-background data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-400 data-[state=active]:shadow-xs transition-all"
+              className="gap-2 text-xs sm:text-base py-2.5 h-full rounded-xl data-[state=active]:bg-background data-[state=active]:text-amber-700 dark:data-[state=active]:text-amber-300 data-[state=active]:shadow-sm font-bold transition-all"
             >
-              <Building2 className="size-4" />
-              <span className="font-semibold">Kanal OPD / Dinas</span>
+              <Building2 className="size-4.5 sm:size-5 text-amber-600 dark:text-amber-400" />
+              <span>Kanal OPD</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1184,32 +1198,35 @@ export function CardKanalDiscovery() {
           {/* ================================================================= */}
           <TabsContent value="posyandu" className="space-y-6 focus-visible:outline-none">
             {/* Box Filter Wilayah */}
-            <div className="rounded-xl border border-border/70 bg-muted/20 p-4 sm:p-5 space-y-4">
-              <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                    <HeartPulse className="size-4" />
+            <div className="rounded-2xl border-2 border-emerald-500/30 bg-emerald-500/5 p-5 sm:p-6 space-y-4 shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-500/20 pb-3.5">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                    <HeartPulse className="size-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Filter Wilayah Posyandu</h3>
-                    <p className="text-[11px] text-muted-foreground">
+                    <h3 className="text-base sm:text-lg font-bold text-foreground">Filter Wilayah Posyandu</h3>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
                       Pilih Kecamatan dan Kelurahan untuk memuat daftar Posyandu
                     </p>
                   </div>
                 </div>
 
-                <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[11px]">
+                <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 text-xs sm:text-sm font-bold px-3 py-1">
                   Layanan Kesehatan & Anak
                 </Badge>
               </div>
 
               {/* Form Grid: Kecamatan, Kelurahan, & Tombol Tampilkan */}
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 items-end">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">
                 {/* 1. Dropdown Kecamatan */}
-                <div className="sm:col-span-4 space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">1. Kecamatan Domisili</label>
+                <div className="sm:col-span-4 space-y-2">
+                  <label className="text-sm sm:text-base font-bold text-foreground flex items-center gap-1.5">
+                    <Building2 className="size-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>1. Kecamatan Domisili</span>
+                  </label>
                   <Select value={kecamatanPosyandu} onValueChange={handleKecamatanPosyanduChange}>
-                    <SelectTrigger className="w-full text-xs h-9 bg-background">
+                    <SelectTrigger className="w-full text-sm sm:text-base h-12 bg-background font-medium">
                       <SelectValue placeholder="Pilih Kecamatan" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1224,10 +1241,13 @@ export function CardKanalDiscovery() {
                 </div>
 
                 {/* 2. Dropdown Kelurahan */}
-                <div className="sm:col-span-4 space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">2. Kelurahan Domisili</label>
+                <div className="sm:col-span-4 space-y-2">
+                  <label className="text-sm sm:text-base font-bold text-foreground flex items-center gap-1.5">
+                    <Building className="size-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>2. Kelurahan Domisili</span>
+                  </label>
                   <Select value={kelurahanPosyandu} onValueChange={(val) => setKelurahanPosyandu(val || "semua")}>
-                    <SelectTrigger className="w-full text-xs h-9 bg-background">
+                    <SelectTrigger className="w-full text-sm sm:text-base h-12 bg-background font-medium">
                       <SelectValue placeholder="Pilih Kelurahan" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1244,13 +1264,13 @@ export function CardKanalDiscovery() {
                 </div>
 
                 {/* 3. Tombol Tampilkan & Reset */}
-                <div className="sm:col-span-4 flex items-center gap-2">
+                <div className="sm:col-span-4 flex items-center gap-2.5">
                   <Button
                     type="button"
                     onClick={() => setShowPosyanduResults(true)}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-9 gap-1.5 font-semibold shadow-xs"
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-sm sm:text-base h-12 gap-2 font-bold shadow-sm rounded-xl"
                   >
-                    <Eye className="size-3.5" />
+                    <Eye className="size-4" />
                     <span>Tampilkan Posyandu</span>
                   </Button>
 
@@ -1265,10 +1285,10 @@ export function CardKanalDiscovery() {
                         setSearchPosyanduText("");
                         setShowPosyanduResults(false);
                       }}
-                      className="h-9 w-9 text-muted-foreground hover:text-foreground shrink-0"
+                      className="h-12 w-12 text-muted-foreground hover:text-foreground shrink-0 rounded-xl border-border/80"
                       title="Reset Filter"
                     >
-                      <RotateCcw className="size-3.5" />
+                      <RotateCcw className="size-4" />
                     </Button>
                   )}
                 </div>
@@ -1277,44 +1297,44 @@ export function CardKanalDiscovery() {
 
             {/* Area Hasil Daftar Posyandu */}
             {!showPosyanduResults ? (
-              <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/10 p-8 text-center">
-                <div className="flex size-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 mb-3">
-                  <SlidersHorizontal className="size-5" />
+              <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/80 bg-muted/20 p-8 sm:p-12 text-center">
+                <div className="flex size-14 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 mb-3.5">
+                  <SlidersHorizontal className="size-7" />
                 </div>
-                <h4 className="text-sm font-semibold text-foreground">Daftar Posyandu Siap Dimuat</h4>
-                <p className="text-xs text-muted-foreground mt-1 max-w-md">
+                <h4 className="text-base sm:text-lg font-bold text-foreground">Daftar Posyandu Siap Dimuat</h4>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1 max-w-lg font-medium leading-relaxed">
                   Silakan tentukan Kecamatan & Kelurahan domisili Anda di atas, kemudian klik tombol{" "}
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">"Tampilkan Posyandu"</span>{" "}
+                  <span className="font-bold text-emerald-700 dark:text-emerald-300">"Tampilkan Posyandu"</span>{" "}
                   untuk menelusuri data resmi Posyandu Kota Tegal.
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
                 {/* Search Bar Tambahan di atas hasil */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-card p-3 rounded-lg border border-border/70">
-                  <div className="relative w-full sm:w-80">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card p-3.5 sm:p-4 rounded-xl border-2 border-border/80 shadow-2xs">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                     <Input
                       type="text"
                       placeholder="Cari nama posyandu..."
                       value={searchPosyanduText}
                       onChange={(e) => setSearchPosyanduText(e.target.value)}
-                      className="pl-8 text-xs h-8.5 bg-background"
+                      className="pl-10 pr-9 text-sm sm:text-base h-11 bg-background font-medium rounded-xl"
                     />
                     {searchPosyanduText && (
                       <button
                         type="button"
                         onClick={() => setSearchPosyanduText("")}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
-                        <X className="size-3" />
+                        <X className="size-4" />
                       </button>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground self-end sm:self-auto">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground self-end sm:self-auto shrink-0">
                     <span>Ditemukan:</span>
-                    <Badge variant="secondary" className="font-bold text-foreground">
+                    <Badge variant="secondary" className="font-bold text-sm text-foreground px-3 py-1">
                       {filteredPosyanduList.length} Posyandu
                     </Badge>
                   </div>
@@ -1322,37 +1342,37 @@ export function CardKanalDiscovery() {
 
                 {/* List Posyandu */}
                 {filteredPosyanduList.length === 0 ? (
-                  <div className="rounded-xl border border-border bg-card p-8 text-center">
-                    <HeartHandshake className="size-8 text-muted-foreground/50 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-foreground">Tidak Ada Posyandu Ditemukan</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                  <div className="rounded-2xl border-2 border-border bg-card p-10 text-center">
+                    <HeartHandshake className="size-10 text-muted-foreground/50 mx-auto mb-3" />
+                    <p className="text-base font-bold text-foreground">Tidak Ada Posyandu Ditemukan</p>
+                    <p className="text-sm text-muted-foreground mt-1">
                       Coba sesuaikan kata kunci pencarian atau ganti pilihan kelurahan.
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[480px] overflow-y-auto pr-1">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5 max-h-[560px] overflow-y-auto pr-1">
                     {filteredPosyanduList.map((p) => (
                       <div
                         key={p.id}
-                        className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-4 transition-all hover:border-emerald-500/50 hover:shadow-xs"
+                        className="flex flex-col justify-between rounded-2xl border-2 border-border/80 bg-card p-5 transition-all hover:border-emerald-500 hover:shadow-md space-y-3"
                       >
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                           <div className="flex items-start justify-between gap-2">
-                            <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-1">{p.nama}</h4>
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 shrink-0">
+                            <h4 className="text-base font-bold text-foreground leading-snug line-clamp-2">{p.nama}</h4>
+                            <Badge variant="outline" className="text-xs px-2 py-0.5 border-emerald-500/40 text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 font-bold shrink-0">
                               Posyandu
                             </Badge>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                            <span className="font-medium text-foreground/90">Kel. {p.kelurahan}</span>
+                          <div className="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium">
+                            <span className="font-semibold text-foreground">Kel. {p.kelurahan}</span>
                             <span>•</span>
                             <span>Kec. {p.kecamatan}</span>
                           </div>
                         </div>
 
-                        <div className="mt-3.5 pt-3 border-t border-border/50 flex items-center justify-between gap-2">
-                          <span className="text-[10px] text-muted-foreground">Kota Tegal, Jawa Tengah</span>
+                        <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-2">
+                          <span className="text-xs text-muted-foreground font-medium">Kota Tegal</span>
                           <Button
                             type="button"
                             size="sm"
@@ -1366,10 +1386,10 @@ export function CardKanalDiscovery() {
                                 kecamatan: p.kecamatan,
                               })
                             }
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] h-7 px-3 gap-1 shadow-xs"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm h-10 px-4 gap-1.5 shadow-xs font-bold rounded-xl"
                           >
                             <span>Gabung</span>
-                            <ArrowRight className="size-3" />
+                            <ArrowRight className="size-4" />
                           </Button>
                         </div>
                       </div>
@@ -1385,72 +1405,72 @@ export function CardKanalDiscovery() {
           {/* ================================================================= */}
           <TabsContent value="sekolah" className="space-y-6 focus-visible:outline-none">
             {/* Keterangan Ringkas Fokus Layanan */}
-            <div className="flex items-center gap-2.5 rounded-lg border border-blue-500/20 bg-blue-500/5 px-3.5 py-2.5 text-xs text-blue-800 dark:text-blue-300">
-              <Sparkles className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
-              <p className="leading-normal">
-                <span className="font-semibold">Informasi Layanan:</span> Kanal Sekolah saat ini melayani pencarian Satuan PAUD & PNF se-Kota Tegal.
+            <div className="flex items-center gap-3 rounded-2xl border-2 border-blue-500/30 bg-blue-500/10 p-4 sm:p-5 text-sm sm:text-base text-blue-950 dark:text-blue-200 font-medium">
+              <Sparkles className="size-5 shrink-0 text-blue-600 dark:text-blue-400" />
+              <p className="leading-relaxed">
+                <span className="font-bold">Informasi Layanan:</span> Kanal Sekolah saat ini melayani pencarian Satuan PAUD & PNF se-Kota Tegal.
               </p>
             </div>
 
             {/* Box Form Filter Bersih & Sederhana */}
-            <div className="rounded-xl border border-border/70 bg-muted/20 p-4 sm:p-5 space-y-4">
-              <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                    <GraduationCap className="size-4" />
+            <div className="rounded-2xl border-2 border-blue-500/30 bg-blue-500/5 p-5 sm:p-6 space-y-4 shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-blue-500/20 pb-3.5">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                    <GraduationCap className="size-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Pencarian Satuan PAUD & PNF Kota Tegal</h3>
-                    <p className="text-[11px] text-muted-foreground">
+                    <h3 className="text-base sm:text-lg font-bold text-foreground">Pencarian Satuan PAUD & PNF Kota Tegal</h3>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
                       Temukan kanal resmi TK, RA, KB, Pos PAUD, PAUD TPQ, TPA, PKBM, hingga SKB se-Kota Tegal
                     </p>
                   </div>
                 </div>
 
-                <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 text-[11px]">
+                <Badge variant="outline" className="border-blue-500/40 bg-blue-500/10 text-blue-800 dark:text-blue-300 text-xs sm:text-sm font-bold px-3 py-1">
                   PAUD & PNF
                 </Badge>
               </div>
 
               {/* Form Kontrol: Search Bar, Dropdown Kecamatan, Dropdown Kelurahan, & Dropdown Kategori */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {/* 1. Input Search Bar (Lebar Penuh) */}
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <Search className="size-3.5 text-blue-600 dark:text-blue-400" />
+                <div className="space-y-2">
+                  <label className="text-sm sm:text-base font-bold text-foreground flex items-center gap-2">
+                    <Search className="size-4 text-blue-600 dark:text-blue-400" />
                     <span>Cari Nama PAUD / PNF atau NPSN:</span>
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4.5 text-muted-foreground" />
                     <Input
                       type="text"
                       placeholder="Ketik nama PAUD / PNF atau nomor NPSN (contoh: Sakila Kerti, Pembina, Al-Irsyad, SKB)..."
                       value={searchSekolahText}
                       onChange={(e) => setSearchSekolahText(e.target.value)}
-                      className="pl-9 pr-8 text-xs sm:text-sm h-10 bg-background rounded-lg"
+                      className="pl-11 pr-10 text-sm sm:text-base h-12 bg-background rounded-xl font-medium"
                     />
                     {searchSekolahText && (
                       <button
                         type="button"
                         onClick={() => setSearchSekolahText("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
-                        <X className="size-3.5" />
+                        <X className="size-4" />
                       </button>
                     )}
                   </div>
                 </div>
 
                 {/* 2. Grid Filter: Dropdown Kecamatan, Dropdown Kelurahan, & Dropdown Kategori */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {/* Dropdown Kecamatan */}
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-foreground flex items-center gap-1">
-                      <Building2 className="size-3 text-muted-foreground" />
+                  <div className="space-y-2">
+                    <label className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1.5">
+                      <Building2 className="size-4 text-muted-foreground" />
                       <span>Kecamatan</span>
                     </label>
                     <Select value={kecamatanSekolah} onValueChange={handleKecamatanSekolahChange}>
-                      <SelectTrigger className="w-full text-xs h-9 bg-background">
+                      <SelectTrigger className="w-full text-sm sm:text-base h-12 bg-background font-medium">
                         <SelectValue placeholder="Semua Kecamatan" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1465,13 +1485,13 @@ export function CardKanalDiscovery() {
                   </div>
 
                   {/* Dropdown Kelurahan */}
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-foreground flex items-center gap-1">
-                      <Building className="size-3 text-muted-foreground" />
+                  <div className="space-y-2">
+                    <label className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1.5">
+                      <Building className="size-4 text-muted-foreground" />
                       <span>Kelurahan</span>
                     </label>
                     <Select value={kelurahanSekolah} onValueChange={(val) => setKelurahanSekolah(val || "semua")}>
-                      <SelectTrigger className="w-full text-xs h-9 bg-background">
+                      <SelectTrigger className="w-full text-sm sm:text-base h-12 bg-background font-medium">
                         <SelectValue placeholder="Semua Kelurahan" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1488,13 +1508,13 @@ export function CardKanalDiscovery() {
                   </div>
 
                   {/* Dropdown Kategori Jenjang PAUD & PNF */}
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-semibold text-foreground flex items-center gap-1">
-                      <GraduationCap className="size-3 text-muted-foreground" />
+                  <div className="space-y-2">
+                    <label className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1.5">
+                      <GraduationCap className="size-4 text-muted-foreground" />
                       <span>Jenis Satuan</span>
                     </label>
                     <Select value={jenjangSekolah} onValueChange={(val) => setJenjangSekolah(val || "semua")}>
-                      <SelectTrigger className="w-full text-xs h-9 bg-background">
+                      <SelectTrigger className="w-full text-sm sm:text-base h-12 bg-background font-medium">
                         <SelectValue placeholder="Semua Satuan PAUD & PNF" />
                       </SelectTrigger>
                       <SelectContent>
@@ -1510,69 +1530,69 @@ export function CardKanalDiscovery() {
               </div>
             </div>
 
-            {/* Area Hasil Daftar Sekolah PAUD & PNF (Langsung Tampil) */}
+            {/* Area Hasil Daftar Sekolah PAUD & PNF */}
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 bg-card p-3 rounded-lg border border-border/70">
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="text-muted-foreground">Filter Aktif:</span>
-                  <Badge variant="outline" className="text-[11px]">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card p-3.5 sm:p-4 rounded-xl border-2 border-border/80 shadow-2xs">
+                <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+                  <span className="text-muted-foreground font-semibold">Filter Aktif:</span>
+                  <Badge variant="outline" className="text-xs font-bold px-2.5 py-0.5">
                     {kecamatanSekolah === "semua"
                       ? "Semua Kecamatan"
                       : `Kec. ${FALLBACK_KECAMATAN.find((k) => k.id === kecamatanSekolah)?.nama || kecamatanSekolah}`}
                   </Badge>
                   {kelurahanSekolah !== "semua" && (
-                    <Badge variant="outline" className="text-[11px]">
+                    <Badge variant="outline" className="text-xs font-bold px-2.5 py-0.5">
                       Kel. {availableKelurahanSekolahList.find((k) => k.id === kelurahanSekolah)?.nama || kelurahanSekolah}
                     </Badge>
                   )}
                   {jenjangSekolah !== "semua" && (
-                    <Badge variant="secondary" className="text-[11px]">
+                    <Badge variant="secondary" className="text-xs font-bold px-2.5 py-0.5">
                       {OPSI_JENJANG_SEKOLAH.find((j) => j.value === jenjangSekolah)?.label || jenjangSekolah}
                     </Badge>
                   )}
                   {searchSekolahText.trim() && (
-                    <Badge variant="secondary" className="text-[11px] font-mono">
+                    <Badge variant="secondary" className="text-xs font-mono font-bold px-2.5 py-0.5">
                       "{searchSekolahText.trim()}"
                     </Badge>
                   )}
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground self-end sm:self-auto">
+                <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground self-end sm:self-auto shrink-0">
                   <span>Hasil:</span>
-                  <Badge variant="secondary" className="font-bold text-foreground">
+                  <Badge variant="secondary" className="font-bold text-sm text-foreground px-3 py-1">
                     Ditemukan {filteredSekolahList.length} lembaga PAUD/PNF
                   </Badge>
                 </div>
               </div>
 
               {isLoadingSekolah ? (
-                <div className="rounded-xl border border-border bg-card p-8 text-center">
-                  <Loader2 className="size-6 text-blue-600 animate-spin mx-auto mb-2" />
-                  <p className="text-xs text-muted-foreground">Memuat data satuan PAUD & PNF...</p>
+                <div className="rounded-2xl border-2 border-border bg-card p-10 text-center">
+                  <Loader2 className="size-8 text-blue-600 animate-spin mx-auto mb-3" />
+                  <p className="text-sm font-semibold text-muted-foreground">Memuat data satuan PAUD & PNF...</p>
                 </div>
               ) : filteredSekolahList.length === 0 ? (
-                <div className="rounded-xl border border-border bg-card p-8 text-center">
-                  <School className="size-8 text-muted-foreground/50 mx-auto mb-2" />
-                  <p className="text-sm font-semibold text-foreground">Tidak Ada Lembaga PAUD/PNF Ditemukan</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                <div className="rounded-2xl border-2 border-border bg-card p-10 text-center">
+                  <School className="size-10 text-muted-foreground/50 mx-auto mb-3" />
+                  <p className="text-base font-bold text-foreground">Tidak Ada Lembaga PAUD/PNF Ditemukan</p>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Coba ubah kata kunci pencarian atau sesuaikan filter kecamatan & kelurahan.
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[520px] overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5 max-h-[580px] overflow-y-auto pr-1">
                   {filteredSekolahList.map((s) => (
                     <div
                       key={s.id}
-                      className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-4 transition-all hover:border-blue-500/50 hover:shadow-xs"
+                      className="flex flex-col justify-between rounded-2xl border-2 border-border/80 bg-card p-5 transition-all hover:border-blue-500 hover:shadow-md space-y-3"
                     >
-                      <div className="space-y-2">
+                      <div className="space-y-2.5">
                         <div className="flex items-start justify-between gap-2">
-                          <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-2">
+                          <h4 className="text-base font-bold text-foreground leading-snug line-clamp-2">
                             {s.nama}
                           </h4>
                           <Badge
                             variant={s.status === "NEGERI" ? "default" : "secondary"}
-                            className={`text-[9px] px-1.5 py-0 shrink-0 font-semibold ${
+                            className={`text-xs px-2 py-0.5 shrink-0 font-bold ${
                               s.status === "NEGERI" ? "bg-blue-600 text-white" : ""
                             }`}
                           >
@@ -1580,31 +1600,31 @@ export function CardKanalDiscovery() {
                           </Badge>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                          <span className="font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded text-foreground">
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
+                          <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded-md text-foreground font-semibold">
                             NPSN: {s.npsn}
                           </span>
                           <span>•</span>
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-blue-500/30 text-blue-700 dark:text-blue-300 bg-blue-500/5 font-semibold">
+                          <Badge variant="outline" className="text-xs px-2 py-0.5 border-blue-500/40 text-blue-800 dark:text-blue-300 bg-blue-500/10 font-bold">
                             {s.subJenjang || s.jenjang}
                           </Badge>
                           {s.naungan && (
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground">
+                            <Badge variant="outline" className="text-xs px-2 py-0.5 text-muted-foreground font-medium">
                               {s.naungan}
                             </Badge>
                           )}
                         </div>
 
-                        <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground pt-1 border-t border-border/40">
-                          <Building className="size-3.5 shrink-0 text-muted-foreground/70 mt-0.5" />
+                        <div className="flex items-start gap-2 text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium pt-1 border-t border-border/40">
+                          <Building className="size-4 shrink-0 text-muted-foreground mt-0.5" />
                           <span className="line-clamp-1">
                             Kel. {s.kelurahan}, Kec. {s.kecamatan}
                           </span>
                         </div>
                       </div>
 
-                      <div className="mt-3.5 pt-3 border-t border-border/50 flex items-center justify-between gap-2">
-                        <span className="text-[10px] text-muted-foreground">Kanal Komunitas</span>
+                      <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-2">
+                        <span className="text-xs text-muted-foreground font-medium">Kanal Komunitas</span>
                         <Button
                           type="button"
                           size="sm"
@@ -1619,10 +1639,10 @@ export function CardKanalDiscovery() {
                               jenjang: s.subJenjang || s.jenjang,
                             })
                           }
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-[11px] h-7 px-3 gap-1 shadow-xs font-semibold rounded-lg"
+                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm h-10 px-4 gap-1.5 shadow-xs font-bold rounded-xl"
                         >
                           <span>Gabung Kanal</span>
-                          <ArrowRight className="size-3" />
+                          <ArrowRight className="size-4" />
                         </Button>
                       </div>
                     </div>
@@ -1637,57 +1657,57 @@ export function CardKanalDiscovery() {
           {/* ================================================================= */}
           <TabsContent value="opd" className="space-y-6 focus-visible:outline-none">
             {/* Box Filter Pencarian OPD */}
-            <div className="rounded-xl border border-border/70 bg-muted/20 p-4 sm:p-5 space-y-4">
-              <div className="flex items-center justify-between gap-2 border-b border-border/50 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                    <Building2 className="size-4" />
+            <div className="rounded-2xl border-2 border-amber-500/30 bg-amber-500/5 p-5 sm:p-6 space-y-4 shadow-2xs">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-500/20 pb-3.5">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                    <Building2 className="size-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-foreground">Kanal Organisasi Perangkat Daerah (OPD)</h3>
-                    <p className="text-[11px] text-muted-foreground">
+                    <h3 className="text-base sm:text-lg font-bold text-foreground">Kanal Organisasi Perangkat Daerah (OPD)</h3>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
                       Terhubung dengan Dinas & Badan Resmi Pemerintah Kota Tegal
                     </p>
                   </div>
                 </div>
 
-                <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[11px]">
+                <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300 text-xs sm:text-sm font-bold px-3 py-1">
                   Layanan Publik & Bantuan
                 </Badge>
               </div>
 
               {/* Form Input Pencarian & Tombol Tampilkan */}
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-                <div className="sm:col-span-8 space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">Pencarian Nama Dinas / Program Layanan</label>
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-end">
+                <div className="sm:col-span-8 space-y-2">
+                  <label className="text-sm sm:text-base font-bold text-foreground">Pencarian Nama Dinas / Program Layanan</label>
                   <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                     <Input
                       type="text"
                       placeholder="Contoh: Kesehatan, Pendidikan, Sosial, Dukcapil, Satpol..."
                       value={searchOpdText}
                       onChange={(e) => setSearchOpdText(e.target.value)}
-                      className="pl-8 text-xs h-9 bg-background"
+                      className="pl-10 pr-9 text-sm sm:text-base h-12 bg-background font-medium rounded-xl"
                     />
                     {searchOpdText && (
                       <button
                         type="button"
                         onClick={() => setSearchOpdText("")}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
-                        <X className="size-3" />
+                        <X className="size-4" />
                       </button>
                     )}
                   </div>
                 </div>
 
-                <div className="sm:col-span-4 flex items-center gap-2">
+                <div className="sm:col-span-4 flex items-center gap-2.5">
                   <Button
                     type="button"
                     onClick={() => setShowOpdResults(true)}
-                    className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs h-9 gap-1.5 font-semibold shadow-xs"
+                    className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-sm sm:text-base h-12 gap-2 font-bold shadow-sm rounded-xl"
                   >
-                    <Eye className="size-3.5" />
+                    <Eye className="size-4" />
                     <span>Tampilkan Kanal OPD</span>
                   </Button>
 
@@ -1700,10 +1720,10 @@ export function CardKanalDiscovery() {
                         setSearchOpdText("");
                         setShowOpdResults(false);
                       }}
-                      className="h-9 w-9 text-muted-foreground hover:text-foreground shrink-0"
+                      className="h-12 w-12 text-muted-foreground hover:text-foreground shrink-0 rounded-xl border-border/80"
                       title="Reset Filter"
                     >
-                      <RotateCcw className="size-3.5" />
+                      <RotateCcw className="size-4" />
                     </Button>
                   )}
                 </div>
@@ -1712,63 +1732,63 @@ export function CardKanalDiscovery() {
 
             {/* Area Hasil Daftar OPD */}
             {!showOpdResults ? (
-              <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/10 p-8 text-center">
-                <div className="flex size-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 mb-3">
-                  <Landmark className="size-5" />
+              <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/80 bg-muted/20 p-8 sm:p-12 text-center">
+                <div className="flex size-14 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 mb-3.5">
+                  <Landmark className="size-7" />
                 </div>
-                <h4 className="text-sm font-semibold text-foreground">Daftar OPD & Dinas Siap Dimuat</h4>
-                <p className="text-xs text-muted-foreground mt-1 max-w-md">
+                <h4 className="text-base sm:text-lg font-bold text-foreground">Daftar OPD & Dinas Siap Dimuat</h4>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1 max-w-lg font-medium leading-relaxed">
                   Ketik nama dinas yang dicari atau klik langsung tombol{" "}
-                  <span className="font-semibold text-amber-600 dark:text-amber-400">"Tampilkan Kanal OPD"</span>{" "}
+                  <span className="font-bold text-amber-700 dark:text-amber-300">"Tampilkan Kanal OPD"</span>{" "}
                   untuk menampilkan seluruh instansi layanan publik di Kota Tegal.
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="flex items-center justify-between gap-2 bg-card p-3 rounded-lg border border-border/70">
-                  <span className="text-xs text-muted-foreground">Kanal Organisasi Perangkat Daerah Resmi</span>
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <div className="flex items-center justify-between gap-3 bg-card p-3.5 sm:p-4 rounded-xl border-2 border-border/80 shadow-2xs">
+                  <span className="text-sm font-semibold text-muted-foreground">Kanal Organisasi Perangkat Daerah Resmi</span>
+                  <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
                     <span>Ditemukan:</span>
-                    <Badge variant="secondary" className="font-bold text-foreground">
+                    <Badge variant="secondary" className="font-bold text-sm text-foreground px-3 py-1">
                       {filteredOpdList.length} OPD
                     </Badge>
                   </div>
                 </div>
 
                 {filteredOpdList.length === 0 ? (
-                  <div className="rounded-xl border border-border bg-card p-8 text-center">
-                    <Building2 className="size-8 text-muted-foreground/50 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-foreground">Tidak Ada OPD Ditemukan</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                  <div className="rounded-2xl border-2 border-border bg-card p-10 text-center">
+                    <Building2 className="size-10 text-muted-foreground/50 mx-auto mb-3" />
+                    <p className="text-base font-bold text-foreground">Tidak Ada OPD Ditemukan</p>
+                    <p className="text-sm text-muted-foreground mt-1">
                       Coba sesuaikan kata kunci pencarian Anda.
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[480px] overflow-y-auto pr-1">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4.5 max-h-[560px] overflow-y-auto pr-1">
                     {filteredOpdList.map((opd) => (
                       <div
                         key={opd.id}
-                        className="flex flex-col justify-between rounded-xl border border-border/70 bg-card p-4 transition-all hover:border-amber-500/50 hover:shadow-xs"
+                        className="flex flex-col justify-between rounded-2xl border-2 border-border/80 bg-card p-5 transition-all hover:border-amber-500 hover:shadow-md space-y-3"
                       >
                         <div className="space-y-2">
                           <div className="flex items-start justify-between gap-2">
-                            <h4 className="text-xs font-bold text-foreground leading-tight">{opd.nama}</h4>
-                            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-bold shrink-0">
+                            <h4 className="text-base font-bold text-foreground leading-snug">{opd.nama}</h4>
+                            <Badge variant="secondary" className="text-xs px-2 py-0.5 font-bold shrink-0">
                               {opd.kode}
                             </Badge>
                           </div>
 
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-500/30 text-amber-700 dark:text-amber-400">
+                          <Badge variant="outline" className="text-xs px-2.5 py-0.5 border-amber-500/40 text-amber-800 dark:text-amber-300 font-semibold bg-amber-500/10">
                             {opd.sektor}
                           </Badge>
 
-                          <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
+                          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed line-clamp-2 font-medium">
                             {opd.deskripsi}
                           </p>
                         </div>
 
-                        <div className="mt-3.5 pt-3 border-t border-border/50 flex items-center justify-between gap-2">
-                          <span className="text-[10px] text-muted-foreground">Pemerintah Kota Tegal</span>
+                        <div className="pt-3 border-t border-border/60 flex items-center justify-between gap-2">
+                          <span className="text-xs text-muted-foreground font-medium">Pemerintah Kota Tegal</span>
                           <Button
                             type="button"
                             size="sm"
@@ -1780,10 +1800,10 @@ export function CardKanalDiscovery() {
                                 detail: opd.deskripsi,
                               })
                             }
-                            className="bg-amber-600 hover:bg-amber-700 text-white text-[11px] h-7 px-3 gap-1 shadow-xs"
+                            className="bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm h-10 px-4 gap-1.5 shadow-xs font-bold rounded-xl"
                           >
                             <span>Gabung</span>
-                            <ArrowRight className="size-3" />
+                            <ArrowRight className="size-4" />
                           </Button>
                         </div>
                       </div>
@@ -1800,32 +1820,35 @@ export function CardKanalDiscovery() {
       {/* 6. MODAL GABUNG KANAL TERPADU (Multi-Peran & Konfirmasi Ringkasan) */}
       {/* ===================================================================== */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-lg p-5 sm:p-6 rounded-2xl">
           <DialogHeader>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div
-                className={`flex size-8 items-center justify-center rounded-lg ${
+                className={`flex size-10 items-center justify-center rounded-xl ${
                   modalData?.tipe === "POSYANDU"
-                    ? "bg-emerald-500/10 text-emerald-600"
+                    ? "bg-emerald-500/15 text-emerald-600"
                     : modalData?.tipe === "SEKOLAH"
-                    ? "bg-blue-500/10 text-blue-600"
-                    : "bg-amber-500/10 text-amber-600"
+                    ? "bg-blue-500/15 text-blue-600"
+                    : "bg-amber-500/15 text-amber-600"
                 }`}
               >
-                {modalData?.tipe === "POSYANDU" && <HeartHandshake className="size-4" />}
-                {modalData?.tipe === "SEKOLAH" && <GraduationCap className="size-4" />}
-                {modalData?.tipe === "OPD" && <Building2 className="size-4" />}
+                {modalData?.tipe === "POSYANDU" && <HeartHandshake className="size-5" />}
+                {modalData?.tipe === "SEKOLAH" && <GraduationCap className="size-5" />}
+                {modalData?.tipe === "OPD" && <Building2 className="size-5" />}
               </div>
-              <DialogTitle className="text-base font-bold">
-                Form Gabung Kanal {modalData?.tipe === "POSYANDU" ? "Posyandu" : modalData?.tipe === "SEKOLAH" ? "Sekolah" : "OPD"}
-              </DialogTitle>
+              <div>
+                <DialogTitle className="text-lg sm:text-xl font-bold">
+                  Form Gabung Kanal {modalData?.tipe === "POSYANDU" ? "Posyandu" : modalData?.tipe === "SEKOLAH" ? "Sekolah" : "OPD"}
+                </DialogTitle>
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium">Pilih peran Anda untuk verifikasi data warga</p>
+              </div>
             </div>
           </DialogHeader>
 
-          <form onSubmit={handleSubmitJoin} className="space-y-4 pt-1">
+          <form onSubmit={handleSubmitJoin} className="space-y-4 pt-2">
             {/* Teks Ringkasan Lokasi / Kanal */}
             <div
-              className={`rounded-xl border p-3.5 space-y-1 ${
+              className={`rounded-xl border-2 p-4 space-y-1.5 ${
                 modalData?.tipe === "POSYANDU"
                   ? "border-emerald-500/30 bg-emerald-500/5"
                   : modalData?.tipe === "SEKOLAH"
@@ -1833,9 +1856,9 @@ export function CardKanalDiscovery() {
                   : "border-amber-500/30 bg-amber-500/5"
               }`}
             >
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+              <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-foreground">
                 <CheckCircle2
-                  className={`size-3.5 ${
+                  className={`size-4 ${
                     modalData?.tipe === "POSYANDU"
                       ? "text-emerald-600"
                       : modalData?.tipe === "SEKOLAH"
@@ -1846,42 +1869,42 @@ export function CardKanalDiscovery() {
                 <span>Konfirmasi Pilihan Kanal:</span>
               </div>
 
-              <p className="text-xs text-foreground font-medium leading-snug">
+              <p className="text-xs sm:text-sm text-foreground font-medium leading-relaxed">
                 {modalData?.tipe === "POSYANDU" && (
                   <>
                     Anda Memilih Bergabung Ke Posyandu:{" "}
-                    <strong className="text-emerald-700 dark:text-emerald-300">{modalData.nama}</strong>, Kel.{" "}
+                    <strong className="text-emerald-700 dark:text-emerald-300 font-bold">{modalData.nama}</strong>, Kel.{" "}
                     {modalData.kelurahan}, Kec. {modalData.kecamatan}, Kota Tegal
                   </>
                 )}
                 {modalData?.tipe === "SEKOLAH" && (
                   <>
                     Anda Memilih Bergabung Ke Sekolah:{" "}
-                    <strong className="text-blue-700 dark:text-blue-300">{modalData.nama}</strong>, {modalData.detail}
+                    <strong className="text-blue-700 dark:text-blue-300 font-bold">{modalData.nama}</strong>, {modalData.detail}
                   </>
                 )}
                 {modalData?.tipe === "OPD" && (
                   <>
                     Anda Memilih Terhubung dengan:{" "}
-                    <strong className="text-amber-700 dark:text-amber-300">{modalData.nama}</strong>
+                    <strong className="text-amber-700 dark:text-amber-300 font-bold">{modalData.nama}</strong>
                   </>
                 )}
               </p>
             </div>
 
             {/* Checkbox Multi-Peran */}
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <UserCheck className="size-3.5 text-muted-foreground" />
+                <label className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1.5">
+                  <UserCheck className="size-4 text-muted-foreground" />
                   <span>Tentukan Peran Anda (Bisa Pilih Lebih Dari Satu):</span>
                 </label>
-                <span className="text-[10px] text-muted-foreground font-medium">
+                <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                   {selectedPeran.length} peran dipilih
                 </span>
               </div>
 
-              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
                 {(modalData?.tipe === "POSYANDU"
                   ? PERAN_POSYANDU_OPTIONS
                   : modalData?.tipe === "SEKOLAH"
@@ -1893,14 +1916,14 @@ export function CardKanalDiscovery() {
                     modalData?.tipe === "POSYANDU"
                       ? isChecked
                         ? "border-emerald-500 bg-emerald-500/10 shadow-2xs ring-1 ring-emerald-500/30"
-                        : "border-border/70 bg-card hover:border-border hover:bg-muted/40"
+                        : "border-border/80 bg-card hover:border-emerald-400 hover:bg-muted/40"
                       : modalData?.tipe === "SEKOLAH"
                       ? isChecked
                         ? "border-blue-500 bg-blue-500/10 shadow-2xs ring-1 ring-blue-500/30"
-                        : "border-border/70 bg-card hover:border-border hover:bg-muted/40"
+                        : "border-border/80 bg-card hover:border-blue-400 hover:bg-muted/40"
                       : isChecked
                       ? "border-amber-500 bg-amber-500/10 shadow-2xs ring-1 ring-amber-500/30"
-                      : "border-border/70 bg-card hover:border-border hover:bg-muted/40";
+                      : "border-border/80 bg-card hover:border-amber-400 hover:bg-muted/40";
 
                   const checkBtnClasses =
                     modalData?.tipe === "POSYANDU"
@@ -1928,22 +1951,22 @@ export function CardKanalDiscovery() {
                           handleTogglePeran(role.id);
                         }
                       }}
-                      className={`flex items-start gap-2.5 rounded-lg border p-2.5 cursor-pointer transition-all duration-150 select-none ${themeClasses}`}
+                      className={`flex items-start gap-3 rounded-xl border-2 p-3.5 cursor-pointer transition-all duration-150 select-none ${themeClasses}`}
                     >
-                      <div className={`flex size-4.5 items-center justify-center rounded border transition-colors shrink-0 mt-0.5 ${checkBtnClasses}`}>
-                        {isChecked && <Check className="size-3 stroke-[3]" />}
+                      <div className={`flex size-5 items-center justify-center rounded-md border-2 transition-colors shrink-0 mt-0.5 ${checkBtnClasses}`}>
+                        {isChecked && <Check className="size-3.5 stroke-[3]" />}
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1">
-                          <span className="text-xs font-semibold leading-tight text-foreground">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-bold leading-tight text-foreground">
                             {role.label}
                           </span>
-                          <Badge variant="secondary" className="text-[9px] px-1 py-0 font-normal shrink-0">
+                          <Badge variant="secondary" className="text-xs px-2 py-0.5 font-semibold shrink-0">
                             {role.badge}
                           </Badge>
                         </div>
-                        <p className="text-[10px] text-muted-foreground mt-0.5 leading-snug">{role.desc}</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed font-medium">{role.desc}</p>
                       </div>
                     </div>
                   );
@@ -1951,22 +1974,20 @@ export function CardKanalDiscovery() {
               </div>
             </div>
 
-            <DialogFooter className="pt-2">
+            <DialogFooter className="pt-3 gap-2 sm:gap-0">
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
                 onClick={() => setIsModalOpen(false)}
                 disabled={isSubmitting}
-                className="text-xs"
+                className="h-11 sm:h-12 text-sm font-semibold rounded-xl"
               >
                 Batal
               </Button>
               <Button
                 type="submit"
-                size="sm"
                 disabled={isSubmitting || selectedPeran.length === 0}
-                className={`text-white text-xs gap-1.5 shadow-xs ${
+                className={`text-white text-sm sm:text-base font-bold h-11 sm:h-12 gap-2 shadow-xs rounded-xl ${
                   modalData?.tipe === "POSYANDU"
                     ? "bg-emerald-600 hover:bg-emerald-700"
                     : modalData?.tipe === "SEKOLAH"
@@ -1974,9 +1995,14 @@ export function CardKanalDiscovery() {
                     : "bg-amber-600 hover:bg-amber-700"
                 }`}
               >
-                {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
-                <span>{isSubmitting ? "Menyimpan..." : "Gabung Kanal"}</span>
-                {!isSubmitting && <ArrowRight className="size-3.5" />}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="size-4.5 animate-spin" />
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  <span>Konfirmasi & Gabung Kanal</span>
+                )}
               </Button>
             </DialogFooter>
           </form>
