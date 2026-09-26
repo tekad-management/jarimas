@@ -8,11 +8,16 @@ import {
   CardKanalDiscovery,
   CardRealtimeFeed,
 } from "@/components/cards";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Radio,
   Layers,
   RefreshCw,
+  Baby,
+  ArrowRight,
+  ShieldCheck,
 } from "lucide-react";
 
 function LinimasaContent() {
@@ -53,6 +58,41 @@ function LinimasaContent() {
           <div className="flex flex-col gap-6 w-full">
             <CardWelcoming />
             <CardIdentityStatus />
+          </div>
+
+          {/* Quick Banner: Sensus & Verval Data Anak Usia 0 - 7 Tahun */}
+          <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-600/10 via-teal-600/5 to-cyan-600/10 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs">
+            <div className="flex items-center gap-3.5">
+              <div className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 text-white shadow-xs shrink-0">
+                <Baby className="size-6" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                    Modul Prioritas Semester Ganjil 2026/2027
+                  </span>
+                  <Badge variant="outline" className="text-[10px] font-bold border-emerald-500/30">
+                    Kota Tegal 33.76
+                  </Badge>
+                </div>
+                <h3 className="text-base font-bold text-foreground">
+                  Pendataan & Verval Silang Data Anak Usia 0 - 7 Tahun
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Hubungkan data sensus siswa sekolah berizin, balita posyandu, dan grup RT dengan mekanisme validasi silang.
+                </p>
+              </div>
+            </div>
+
+            <Link href="/data-anak" className="shrink-0 w-full sm:w-auto">
+              <Button
+                size="sm"
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 px-4 gap-1.5 shadow-xs rounded-xl"
+              >
+                <span>Buka Modul Verval Anak</span>
+                <ArrowRight className="size-3.5" />
+              </Button>
+            </Link>
           </div>
 
           {/* 2. Card Kanal Discovery & Integrasi Komunitas (Full Width) */}

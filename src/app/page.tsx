@@ -20,14 +20,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import {
   Sparkles,
@@ -50,7 +42,6 @@ import {
   Tag,
   PhoneCall,
   Activity,
-  Compass,
   Baby,
   GraduationCap,
   Share2,
@@ -181,35 +172,12 @@ const MARKET_PRODUCTS = [
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedMarketCategory, setSelectedMarketCategory] = useState<string>("Semua");
-  const [joinModalOpen, setJoinModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<typeof MARKET_PRODUCTS[0] | null>(null);
-
-  // Form State Gabung Komunitas
-  const [joinForm, setJoinForm] = useState({
-    nama: "",
-    kecamatan: "Tegal Timur",
-    kelurahan: "Mintaragen",
-    peran: "Warga",
-  });
 
   const filteredProducts =
     selectedMarketCategory === "Semua"
       ? MARKET_PRODUCTS
       : MARKET_PRODUCTS.filter((p) => p.kategori === selectedMarketCategory);
-
-  const handleJoinSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast.success("Permintaan Bergabung Terkirim!", {
-      description: `Selamat datang ${joinForm.nama}! Pengurus RW & Kelurahan ${joinForm.kelurahan} akan memverifikasi pendaftaran Anda.`,
-    });
-    setJoinModalOpen(false);
-    setJoinForm({
-      nama: "",
-      kecamatan: "Tegal Timur",
-      kelurahan: "Mintaragen",
-      peran: "Warga",
-    });
-  };
 
   const handleOrderProduct = (prod: typeof MARKET_PRODUCTS[0]) => {
     toast.success(`Menghubungkan ke ${prod.penjual}`, {
@@ -271,26 +239,16 @@ export default function LandingPage() {
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Link href="/linimasa">
+              <Link href="/registrasi">
                 <Button
                   size="lg"
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-6 h-11 shadow-md hover:shadow-lg transition-all gap-2"
                 >
-                  <Compass className="size-4" />
-                  <span>Jelajahi Linimasa Warga</span>
+                  <Users className="size-4" />
+                  <span>Gabung Komunitas</span>
                   <ArrowRight className="size-4" />
                 </Button>
               </Link>
-
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => setJoinModalOpen(true)}
-                className="text-sm font-semibold h-11 px-5 gap-2 border-border/80 hover:bg-muted"
-              >
-                <Users className="size-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Gabung Komunitas</span>
-              </Button>
             </div>
 
             {/* Micro Badge Chips */}
@@ -707,9 +665,6 @@ export default function LandingPage() {
               <a href="#komunitas" className="hover:text-foreground">Komunitas</a>
               <a href="#kabar" className="hover:text-foreground">Kabar Warga</a>
               <a href="#market" className="hover:text-foreground">Jarimas Market</a>
-              <Link href="/linimasa" className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">
-                Linimasa Warga &rarr;
-              </Link>
             </div>
           </div>
 
@@ -721,99 +676,7 @@ export default function LandingPage() {
       </footer>
 
       {/* ========================================================================= */}
-      {/* 9. MODAL: GABUNG KOMUNITAS */}
-      {/* ========================================================================= */}
-      <Dialog open={joinModalOpen} onOpenChange={setJoinModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold">Gabung Komunitas jarimas.id</DialogTitle>
-            <DialogDescription className="text-xs">
-              Daftarkan diri Anda atau keluarga ke kanal komunitas kelurahan domisili Kota Tegal.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleJoinSubmit} className="space-y-3.5 pt-2">
-            <div className="space-y-1">
-              <label className="text-xs font-medium">Nama Lengkap *</label>
-              <Input
-                placeholder="Contoh: Budi Santoso"
-                value={joinForm.nama}
-                onChange={(e) => setJoinForm({ ...joinForm, nama: e.target.value })}
-                required
-                className="text-xs"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-medium">Kecamatan</label>
-                <Select
-                  value={joinForm.kecamatan}
-                  onValueChange={(val) => setJoinForm({ ...joinForm, kecamatan: val || "Tegal Timur" })}
-                >
-                  <SelectTrigger className="w-full text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Tegal Timur">Tegal Timur</SelectItem>
-                    <SelectItem value="Tegal Barat">Tegal Barat</SelectItem>
-                    <SelectItem value="Tegal Selatan">Tegal Selatan</SelectItem>
-                    <SelectItem value="Margadana">Margadana</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-medium">Kelurahan Domisili</label>
-                <Input
-                  placeholder="Contoh: Mintaragen"
-                  value={joinForm.kelurahan}
-                  onChange={(e) => setJoinForm({ ...joinForm, kelurahan: e.target.value })}
-                  required
-                  className="text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium">Peran / Status</label>
-              <Select
-                value={joinForm.peran}
-                onValueChange={(val) => setJoinForm({ ...joinForm, peran: val || "Warga" })}
-              >
-                <SelectTrigger className="w-full text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Warga">Warga Domisili</SelectItem>
-                  <SelectItem value="Pengurus RT/RW">Pengurus RT / RW</SelectItem>
-                  <SelectItem value="Kader Posyandu">Kader Posyandu</SelectItem>
-                  <SelectItem value="Guru / Sekolah">Guru / Pihak Sekolah</SelectItem>
-                  <SelectItem value="Pelaku UMKM">Pelaku Usaha / UMKM</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <DialogFooter className="pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setJoinModalOpen(false)}
-                className="text-xs"
-              >
-                Batal
-              </Button>
-              <Button type="submit" size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold">
-                Kirim Pendaftaran
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* ========================================================================= */}
-      {/* 10. MODAL: PESAN PRODUK MARKET */}
+      {/* 9. MODAL: PESAN PRODUK MARKET */}
       {/* ========================================================================= */}
       {selectedProduct && (
         <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && setSelectedProduct(null)}>

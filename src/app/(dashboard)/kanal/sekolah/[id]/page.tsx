@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { MASTER_ALL_SEKOLAH_TEGAL } from "@/components/cards/card-kanal-discovery";
+import { CardTabelDataAnak } from "@/components/data-anak";
 import {
   Card,
   CardContent,
@@ -258,6 +259,17 @@ export default function SekolahDetailPage({ params }: SekolahDetailPageProps) {
             </div>
           </CardContent>
         </Card>
+
+        {/* ========================================================================= */}
+        {/* MODUL DATA ANAK USIA 0 - 7 TAHUN & WORKFLOW VERVAL KANAL SEKOLAH */}
+        {/* ========================================================================= */}
+        <CardTabelDataAnak
+          initialRoleContext="SEKOLAH"
+          kanalId={sekolah.id}
+          kanalNama={sekolah.nama}
+          title={`Data Siswa Anak Usia 0 - 7 Tahun (${sekolah.nama})`}
+          description={`Pendaftaran siswa dan validasi kesehatan/tumbuh kembang anak usia dini di ${sekolah.nama}. Data pendaftaran siswa baru akan otomatis mengalir ke RT dan Posyandu domisili untuk diverifikasi.`}
+        />
       </div>
     </div>
   );

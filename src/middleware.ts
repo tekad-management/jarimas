@@ -38,14 +38,15 @@ export async function middleware(request: NextRequest) {
 
   // Halaman publik yang diizinkan untuk diakses tanpa login:
   // - Beranda / Landing Page: "/"
-  // - Autentikasi: "/login", "/register", "/auth/callback"
+  // - Autentikasi: "/login", "/registrasi", "/auth/callback"
   const isPublicRoute =
     pathname === "/" ||
     pathname === "/login" ||
+    pathname === "/registrasi" ||
     pathname === "/register" ||
     pathname.startsWith("/auth/callback");
 
-  // 1. Pengunjung publik yang belum login HANYA boleh mengakses Beranda ("/") atau halaman login/register/callback
+  // 1. Pengunjung publik yang belum login HANYA boleh mengakses Beranda ("/") atau halaman login/registrasi/callback
   // Jika mencoba mengakses rute terproteksi (/linimasa, /kanal/*, /kabar, /posyandu, /profil, dll.), redirect ke Beranda ("/")
   if (!user && !isPublicRoute) {
     const redirectUrl = request.nextUrl.clone();
@@ -54,8 +55,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // 2. Jika pengguna sudah login dan mencoba mengakses halaman /login atau /register, otomatis redirect ke /linimasa
-  if (user && (pathname === "/login" || pathname === "/register")) {
+  // Redirect legacy /register to /registrasi
+  if (pathname === "/register") {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = user ? "/linimasa" : "/registrasi";
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // 2. Jika pengguna sudah login dan mencoba mengakses halaman /login atau /registrasi, otomatis redirect ke /linimasa
+  if (user && (pathname === "/login" || pathname === "/registrasi")) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/linimasa";
     return NextResponse.redirect(redirectUrl);

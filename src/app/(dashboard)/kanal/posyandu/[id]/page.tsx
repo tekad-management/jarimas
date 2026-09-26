@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { ALL_MASTER_POSYANDU_TEGAL } from "@/components/cards/card-kanal-discovery";
+import { CardTabelDataAnak } from "@/components/data-anak";
 import {
   Card,
   CardContent,
@@ -252,6 +253,18 @@ export default function PosyanduDetailPage({ params }: PosyanduDetailPageProps) 
             </div>
           </CardContent>
         </Card>
+
+        {/* ========================================================================= */}
+        {/* MODUL DATA ANAK USIA 0 - 7 TAHUN & WORKFLOW VERVAL KANAL POSYANDU */}
+        {/* ========================================================================= */}
+        <CardTabelDataAnak
+          initialRoleContext="POSYANDU"
+          kanalId={posyandu.id}
+          kanalNama={posyandu.nama}
+          kelurahanId={posyandu.kelurahanId}
+          title={`Data Balita & Anak Usia 0 - 7 Tahun (${posyandu.nama})`}
+          description={`Pelayanan verifikasi & validasi domisili balita, pencatatan penimbangan tumbuh kembang (TB, BB, Lingkar Kepala), serta pendaftaran anak usia dini di lingkungan ${posyandu.nama}.`}
+        />
       </div>
     </div>
   );

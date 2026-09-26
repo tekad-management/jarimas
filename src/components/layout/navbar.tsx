@@ -30,6 +30,7 @@ import {
   X,
   ShieldCheck,
   UserCheck,
+  Baby,
 } from "lucide-react";
 
 interface UserProfile {
@@ -165,6 +166,12 @@ export function Navbar({ isLandingPage = false }: NavbarProps) {
       href: "/linimasa?tab=sekolah",
       icon: School,
       description: "Informasi PAUD, TK, SD, SMP",
+    },
+    {
+      name: "Data Anak (0-7 Thn)",
+      href: "/data-anak",
+      icon: Baby,
+      description: "Sensus & verval silang data anak",
     },
   ];
 
@@ -392,7 +399,7 @@ export function Navbar({ isLandingPage = false }: NavbarProps) {
                 </Button>
               </Link>
 
-              <Link href="/register" className="hidden sm:block">
+              <Link href="/registrasi" className="hidden sm:block">
                 <Button
                   size="sm"
                   className="items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold h-10 px-4 shadow-xs rounded-xl"
@@ -413,7 +420,7 @@ export function Navbar({ isLandingPage = false }: NavbarProps) {
                     Masuk
                   </Button>
                 </Link>
-                <Link href="/register">
+                <Link href="/registrasi">
                   <Button
                     size="sm"
                     className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-9 px-3 shadow-xs rounded-xl"
@@ -551,7 +558,7 @@ export function Navbar({ isLandingPage = false }: NavbarProps) {
                       <span>Masuk ke Akun</span>
                     </Button>
                   </Link>
-                  <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="w-full">
+                  <Link href="/registrasi" onClick={() => setMobileMenuOpen(false)} className="w-full">
                     <Button
                       className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold h-11 gap-2 rounded-xl"
                     >

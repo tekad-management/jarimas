@@ -10,6 +10,7 @@ import {
   GraduationCap,
   Building2,
   User,
+  Baby,
 } from "lucide-react";
 
 function MobileNavContent() {
@@ -67,13 +68,19 @@ function MobileNavContent() {
         ((pathname === "/linimasa" || pathname === "/") && activeTabParam === "opd"),
     },
     {
+      name: "Data Anak",
+      href: "/data-anak",
+      icon: Baby,
+      isActive: pathname.startsWith("/data-anak"),
+    },
+    {
       name: isLoggedIn ? "Profil" : "Akun",
       href: isLoggedIn ? "/profil" : "/login",
       icon: User,
       isActive:
         pathname.startsWith("/profil") ||
         pathname === "/login" ||
-        pathname === "/register",
+        pathname === "/registrasi",
     },
   ];
 

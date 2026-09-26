@@ -247,7 +247,7 @@ export default function LoginPage() {
             <p className="text-xs text-muted-foreground">
               Belum punya akun?{" "}
               <Link
-                href="/register"
+                href="/registrasi"
                 className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline transition-colors"
               >
                 Daftar di sini
