@@ -42,9 +42,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Sparkles,
   User,
   Mail,
+  MailCheck,
   Lock,
   Loader2,
   ArrowRight,
@@ -82,6 +91,8 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   // Default date state for custom calendar popover
   const initialDate = new Date(2000, 0, 1);
@@ -199,21 +210,15 @@ export default function RegisterPage() {
         }
       }
 
-      // Langkah 3: Notifikasi Berhasil & Redirect
-      const statusKet = values.domisili_sama_dengan_kk ? "Penduduk" : "Pendatang";
+      // Langkah 3: Notifikasi Berhasil & Tampilkan Modal Instruksi Konfirmasi Email
+      setRegisteredEmail(values.email);
+      setIsSuccessModalOpen(true);
 
-      if (authData.session) {
-        toast.success("Registrasi Berhasil!", {
-          description: `Selamat datang, @${values.username}! Mengalihkan ke Linimasa...`,
-        });
-        router.push("/linimasa");
-        router.refresh();
-      } else {
-        toast.success("Pendaftaran Berhasil!", {
-          description: `Akun @${values.username} berhasil dibuat. Silakan masuk untuk melanjutkan.`,
-        });
-        router.push("/login");
-      }
+      toast.success("Registrasi berhasil!", {
+        description:
+          "Buka email Anda dari Supabase, klik 'Confirm email address' dan silahkan masuk.",
+        duration: 8000,
+      });
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : "Terjadi kesalahan pada sistem pendaftaran.";
@@ -950,6 +955,73 @@ export default function RegisterPage() {
           <span>Keamanan Data Terenkripsi • Kota Tegal 33.76</span>
         </div>
       </div>
+
+      {/* Modal Dialog Pop-up Sukses Registrasi & Verifikasi Email */}
+      <Dialog
+        open={isSuccessModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsSuccessModalOpen(false);
+            router.push("/login");
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md border-border/80 shadow-2xl backdrop-blur-xs bg-card/95">
+          <DialogHeader className="text-center sm:text-center space-y-2">
+            <div className="mx-auto mb-1 flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20 shadow-inner">
+              <MailCheck className="size-7" />
+            </div>
+            <DialogTitle className="text-lg font-bold text-foreground">
+              Registrasi Berhasil!
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Buka email Anda dari Supabase, klik{" "}
+              <span className="text-foreground font-semibold">
+                &apos;Confirm email address&apos;
+              </span>{" "}
+              dan silahkan masuk.
+            </DialogDescription>
+          </DialogHeader>
+
+          {registeredEmail && (
+            <div className="flex items-center gap-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-emerald-800 dark:text-emerald-300">
+              <Mail className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <div className="flex flex-col min-w-0 text-left">
+                <span className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground">
+                  Email Tujuan Verifikasi:
+                </span>
+                <span className="font-semibold truncate">{registeredEmail}</span>
+              </div>
+            </div>
+          )}
+
+          <div className="text-[11px] text-muted-foreground bg-muted/40 rounded-lg p-2.5 space-y-1 border border-border/60 text-left">
+            <p className="font-medium text-foreground">💡 Panduan Cepat:</p>
+            <ul className="list-disc list-inside space-y-0.5 pl-1">
+              <li>
+                Periksa folder <strong>Spam / Junk / Promosi</strong> jika email tidak langsung muncul.
+              </li>
+              <li>
+                Setelah tautan konfirmasi diklik, akun Anda aktif dan siap digunakan untuk masuk.
+              </li>
+            </ul>
+          </div>
+
+          <DialogFooter className="pt-2 sm:justify-center">
+            <Button
+              type="button"
+              onClick={() => {
+                setIsSuccessModalOpen(false);
+                router.push("/login");
+              }}
+              className="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all"
+            >
+              <span>Mengerti, Ke Halaman Login</span>
+              <ArrowRight className="size-4 ml-1.5" />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -10,12 +10,18 @@
 !.yarn/releases
 !.yarn/versions
 
+# ignore node_modules
+node_modules
+
 # testing
 /coverage
+build
+dist
 
 # next.js
 /.next/
 /out/
+.next
 
 # production
 /build
@@ -32,6 +38,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+.env*.local
 
 # vercel
 .vercel
