@@ -1,8 +1,9 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import {
   Layers,
   HeartHandshake,
@@ -15,6 +16,24 @@ function MobileNavContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeTabParam = searchParams.get("tab") || searchParams.get("unit_type");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setIsLoggedIn(!!user);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session?.user);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const navItems = [
     {
@@ -48,10 +67,13 @@ function MobileNavContent() {
         ((pathname === "/linimasa" || pathname === "/") && activeTabParam === "opd"),
     },
     {
-      name: "Akun",
-      href: "/login",
+      name: isLoggedIn ? "Profil" : "Akun",
+      href: isLoggedIn ? "/profil" : "/login",
       icon: User,
-      isActive: pathname === "/login" || pathname === "/register" || pathname.startsWith("/profile"),
+      isActive:
+        pathname.startsWith("/profil") ||
+        pathname === "/login" ||
+        pathname === "/register",
     },
   ];
 

@@ -210,13 +210,23 @@ export default function RegisterPage() {
         }
       }
 
-      // Langkah 3: Notifikasi Berhasil & Tampilkan Modal Instruksi Konfirmasi Email
+      // Jika langsung mendapatkan sesi aktif (auto-login), arahkan langsung ke /linimasa
+      if (authData.session) {
+        toast.success("Registrasi Berhasil!", {
+          description: "Selamat datang di jarimas.id. Anda telah dialihkan ke Linimasa.",
+        });
+        router.push("/linimasa");
+        router.refresh();
+        return;
+      }
+
+      // Langkah 3: Jika konfirmasi email diaktifkan oleh Supabase, tampilkan modal instruksi
       setRegisteredEmail(values.email);
       setIsSuccessModalOpen(true);
 
       toast.success("Registrasi berhasil!", {
         description:
-          "Buka email Anda dari Supabase, klik 'Confirm email address' dan silahkan masuk.",
+          "Buka email Anda dari Supabase, klik 'Confirm email address' untuk mengaktifkan akun.",
         duration: 8000,
       });
     } catch (err: unknown) {

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { Navbar } from "@/components/layout/navbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -217,164 +218,24 @@ export default function LandingPage() {
     setSelectedProduct(null);
   };
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("auth") === "required") {
+        toast.info("Akses Terbatas", {
+          description: "Silakan masuk atau daftar akun terlebih dahulu untuk mengakses layanan dan linimasa jarimas.id.",
+          duration: 6000,
+        });
+      }
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans antialiased flex flex-col selection:bg-emerald-500 selection:text-white">
       {/* ========================================================================= */}
-      {/* 1. TOP HEADER NAVIGATION */}
+      {/* 1. TOP DYNAMIC NAVBAR */}
       {/* ========================================================================= */}
-      <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/85 backdrop-blur-md transition-all shadow-xs">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          {/* Logo & Wilayah Badge */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-cyan-500 text-white shadow-sm ring-1 ring-emerald-500/30 group-hover:scale-105 transition-transform">
-              <Sparkles className="size-4.5" />
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <span className="text-lg font-bold tracking-tight text-foreground">
-                  jarimas<span className="text-emerald-600 dark:text-emerald-400">.id</span>
-                </span>
-                <Badge
-                  variant="outline"
-                  className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold px-1.5 py-0 h-4.5"
-                >
-                  Kota Tegal
-                </Badge>
-              </div>
-              <span className="text-[10px] text-muted-foreground font-medium -mt-0.5">
-                Portal Komunitas Kota Tegal
-              </span>
-            </div>
-          </Link>
-
-          {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-1 text-xs font-semibold">
-            <a
-              href="#komunitas"
-              className="rounded-lg px-3.5 py-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            >
-              Komunitas
-            </a>
-            <a
-              href="#kabar"
-              className="rounded-lg px-3.5 py-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            >
-              Kabar Warga
-            </a>
-            <a
-              href="#market"
-              className="rounded-lg px-3.5 py-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            >
-              Jarimas Market
-            </a>
-            <a
-              href="#statistik"
-              className="rounded-lg px-3.5 py-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            >
-              Statistik
-            </a>
-          </nav>
-
-          {/* Desktop CTA Action Buttons */}
-          <div className="hidden sm:flex items-center gap-2.5">
-            <Link href="/login">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs font-semibold h-8.5 px-3.5 gap-1.5 border-border/80 hover:bg-muted/80"
-              >
-                <LogIn className="size-3.5" />
-                <span>Masuk</span>
-              </Button>
-            </Link>
-
-            <Link href="/register">
-              <Button
-                size="sm"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-8.5 px-4 shadow-xs gap-1.5"
-              >
-                <UserPlus className="size-3.5" />
-                <span>Daftar</span>
-              </Button>
-            </Link>
-          </div>
-
-          {/* Mobile Action Buttons & Hamburger Toggle */}
-          <div className="flex sm:hidden items-center gap-1.5">
-            <Link href="/login">
-              <Button variant="outline" size="sm" className="text-xs h-8 px-2.5 font-medium border-border/80">
-                Masuk
-              </Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-8 px-2.5 shadow-xs">
-                Daftar
-              </Button>
-            </Link>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="size-8 p-0 border-border/80"
-              aria-label="Menu navigasi mobile"
-            >
-              {mobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Dropdown Drawer */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border/80 bg-background/95 backdrop-blur-lg px-4 py-3 space-y-2 animate-in slide-in-from-top-2">
-            <a
-              href="#komunitas"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block rounded-md px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              Pilar Komunitas
-            </a>
-            <a
-              href="#kabar"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block rounded-md px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              Kabar & Agenda Warga
-            </a>
-            <a
-              href="#market"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block rounded-md px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              Jarimas Market UMKM
-            </a>
-            <a
-              href="#statistik"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block rounded-md px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              Statistik Kota Tegal
-            </a>
-            <div className="pt-2 flex flex-col gap-2 border-t border-border/60">
-              <Link href="/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full text-xs h-9 justify-center gap-1.5"
-                >
-                  <LogIn className="size-3.5" />
-                  <span>Masuk</span>
-                </Button>
-              </Link>
-              <Link href="/register" className="w-full" onClick={() => setMobileMenuOpen(false)}>
-                <Button size="sm" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold h-9 gap-1.5">
-                  <UserPlus className="size-3.5" />
-                  <span>Daftar Akun</span>
-                </Button>
-              </Link>
-            </div>
-          </div>
-        )}
-      </header>
+      <Navbar isLandingPage={true} />
 
       {/* ========================================================================= */}
       {/* 2. HERO SECTION */}
